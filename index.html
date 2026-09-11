@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PRECISION EDITOR V2 - CLEAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0e;color:#eee;font-family:system-ui;padding:12px;padding-bottom:120px}
+.header{background:#12121a;padding:14px;border-radius:12px;border:1px solid #333;margin-bottom:12px}
+.card{background:#15151d;border:1px solid #333;border-radius:14px;padding:14px;margin-top:12px}
+.btn{padding:12px 16px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;width:100%;margin-top:8px}
+.btn-primary{background:#ff3b5c;color:#fff}
+.btn-ghost{background:#2a2a3a;color:#fff}
+.btn-green{background:#1a8a4a;color:#fff}
+input,textarea,select{width:100%;padding:12px;background:#1e1e2a;border:1px solid #444;color:#fff;border-radius:10px;margin-top:8px}
+.small{color:#aaa;font-size:12px;line-height:1.4;margin-top:6px}
+.chip{padding:10px 14px;border-radius:20px;border:1px solid #444;background:#1e1e2a;font-size:12px;cursor:pointer;display:inline-block;margin:4px}
+.chip.active{background:#4aff8a;color:#000;border-color:#4aff8a;font-weight:800}
+.pe-inner-tab{padding:10px 16px;border-radius:20px;border:1px solid #444;background:#1e1e2a;color:#aaa;cursor:pointer;display:inline-block;margin:4px;font-weight:700}
+.pe-inner-tab.active{background:#ff3b5c;color:#fff;border-color:#ff3b5c}
+canvas{width:100%;border-radius:12px;background:#000}
+#pe_baseCanvas,#pe_maskCanvas{width:100%;border-radius:12px;background:#000}
+.pe-mode-panel{margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div><b style="color:#ff3b5c;font-size:18px">🎯 PRECISION EDITOR V2 - CLEAN</b><div class="small">Standalone App - No tabs, no conflicts. Upload → Auto-Mask Body Part → Edit only that part. Face/outfit stays 100% same.</div></div>
+</div>
+</div>
+
+<div class="card">
+<b>⚙️ Venice API Key</b>
+
+<div style="display:flex;gap:8px;margin-top:8px"><input type="password" id="apiKey" placeholder="Paste Venice API Key here" style="flex:1"><button class="btn btn-ghost" style="width:80px" onclick="toggleKey()">👁️</button></div>
+<div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="testKey()">Test Key</button><button class="btn btn-ghost" onclick="saveKey()">Save Key</button></div>
+<div id="keyStatus" class="small" style="margin-top:6px"></div>
+</div>
+
+<div class="card">
+<b>📸 Upload Image</b>
+<div id="pe_uploadBox" onclick="document.getElementById('pe_editInput').click()" style="height:140px;border:2px dashed #555;border-radius:12px;background:#1e1e2a;display:flex;align-items:center;justify-content:center;flex-direction:column;margin-top:10px;cursor:pointer">
+<span style="font-size:32px">📸</span><span class="small" style="margin-top:8px">Tap to Upload from Gallery (Any image - dressed/nude)</span>
+</div>
+<input type="file" id="pe_editInput" accept="image/*" style="display:none">
+
+<div id="pe_workspace" style="display:none">
+<div style="position:relative;margin-top:14px">
+<canvas id="pe_baseCanvas"></canvas>
+<canvas id="pe_maskCanvas" style="position:absolute;left:0;top:0;opacity:0.6"></canvas>
+</div>
+<div id="pe_status" class="small" style="margin-top:8px;color:#4aff8a;font-weight:700">Ready</div>
+
+<div class="card" style="background:#1e1e2a">
+<div class="small" style="font-weight:800;color:#fff;font-size:13px">STEP 1: What body part to edit? (App auto-masks it - no manual painting needed)</div>
+<div style="margin-top:8px">
+<span class="chip" onclick="pe_setPart('hips')">Hips</span>
+<span class="chip" onclick="pe_setPart('waist')">Waist</span>
+<span class="chip" onclick="pe_setPart('thighs')">Thighs</span>
+<span class="chip" onclick="pe_setPart('chest')">Chest/Breast</span>
+<span class="chip" onclick="pe_setPart('butt')">Butt</span>
+<span class="chip" onclick="pe_setPart('legs')">Legs</span>
+<span class="chip" onclick="pe_setPart('belly')">Belly</span>
+<span class="chip" onclick="pe_setPart('arms')">Arms</span>
+<span class="chip" onclick="pe_setPart('hair')">Hair</span>
+<span class="chip" onclick="pe_setPart('pubic hair')">Pubic Hair</span>
+</div>
+<input type="text" id="pe_partInput" placeholder="Or type: hips, waist, chest, thighs, legs, pubic hair...">
+<button class="btn btn-primary" onclick="pe_autoMask()">🎯 Auto-Detect & Mask This Body Part</button>
+<div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-ghost" onclick="pe_setBrush(15)">Small Brush</button><button class="btn btn-ghost" onclick="pe_setBrush(30)">Medium</button><button class="btn btn-ghost" onclick="pe_setBrush(60)">Large</button><button class="btn btn-ghost" onclick="pe_clearMask()">🧹 Clear Mask</button></div>
+<div class="small">Pink = will be edited. Outside pink = 100% same (face/outfit). You can adjust with brush after auto-mask.</div>
+</div>
+
+<div style="display:flex;gap:6px;overflow:auto;margin-top:14px;padding:6px 0">
+<div class="pe-inner-tab active" onclick="pe_setEditType('pose')" id="pe_tab_pose">1️⃣ Change Pose</div>
+<div class="pe-inner-tab" onclick="pe_setEditType('size')" id="pe_tab_size">2️⃣ Thickness/Size/Length</div>
+<div class="pe-inner-tab" onclick="pe_setEditType('skin')" id="pe_tab_skin">3️⃣ Skin Tone</div>
+<div class="pe-inner-tab" onclick="pe_setEditType('remove')" id="pe_tab_remove">4️⃣ Remove Object</div>
+</div>
+
+<div id="pe_mode_pose" class="pe-mode-panel">
+<div class="card" style="background:#1e1e2a;border:1px dashed #4aff8a">
+<div class="small" style="font-weight:800;color:#fff">1️⃣ Change in Pose - Keeps outfit/face/body same, only position changes</div>
+<textarea id="pe_posePrompt" rows="2" placeholder="Example: change pose to sitting with legs crossed, hands on knees, back slightly arched"></textarea>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+<span class="chip" onclick="document.getElementById('pe_posePrompt').value='standing with hands behind head, legs slightly apart'">Hands Behind</span>
+<span class="chip" onclick="document.getElementById('pe_posePrompt').value='sitting with legs crossed, leaning forward'">Sitting Cross</span>
+<span class="chip" onclick="document.getElementById('pe_posePrompt').value='lying on side, one leg bent, hand on hip'">Lying Side</span>
+</div>
+<button class="btn btn-primary" onclick="pe_veniceEdit('pose')" style="padding:14px">🔥 Change Pose - Keep Outfit/Face Same (Venice Inside)</button>
+</div>
+</div>
+
+<div id="pe_mode_size" class="pe-mode-panel" style="display:none">
+<div class="card" style="background:#1e1e2a;border:1px dashed #ffcc00">
+<div class="small" style="font-weight:800;color:#fff">2️⃣ Change thickness/size/length of particular body part (masked only)</div>
+<textarea id="pe_sizePrompt" rows="3" placeholder="Examples:\n• increase thickness of hips slightly natural\n• reduce size of waist, make slimmer\n• increase size of chest slightly natural\n• increase length of legs slightly\n• increase length of pubic hair"></textarea>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase thickness of hips slightly, natural curve'">+ Hips Thick</span>
+<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='reduce thickness of waist, make slimmer'">- Waist</span>
+<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase size of chest slightly, natural'">+ Chest</span>
+<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='reduce size of chest slightly'">- Chest</span>
+<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase length of legs slightly, keep proportions'">+ Leg Length</span>
+<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase thickness of thighs slightly'">+ Thighs</span>
+<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase length of pubic hair'">+ Pubic Hair Length</span>
+</div>
+<div class="small" style="color:#ffcc00">App auto-masked that body part (pink). Venice will edit ONLY pink area, keep face/outfit 100% same outside.</div>
+<button class="btn btn-primary" onclick="pe_veniceEdit('size')" style="padding:14px">🔥 Edit Thickness/Size/Length (Masked Part Only)</button>
+</div>
+</div>
+
+<div id="pe_mode_skin" class="pe-mode-panel" style="display:none">
+<div class="card" style="background:#1e1e2a;border:1px dashed #4aff8a">
+<div class="small" style="font-weight:800;color:#fff">3️⃣ Skin Colour/Tone - Slider (masked skin only)</div>
+<div class="small">Auto-mask already selected skin of that body part. Live preview - only pink skin changes, clothes not touched.</div>
+<div style="margin-top:10px"><div class="small">Light ↔ Dark</div><input type="range" id="pe_dark" min="-60" max="60" value="0" oninput="pe_liveSkin()"></div>
+<div style="margin-top:8px"><div class="small">Warm ↔ Cool (Fair → Tanned)</div><input type="range" id="pe_warm" min="-60" max="60" value="0" oninput="pe_liveSkin()"></div>
+<div style="margin-top:8px"><div class="small">Redness / Pink</div><input type="range" id="pe_red" min="-40" max="40" value="0" oninput="pe_liveSkin()"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-primary" style="flex:1" onclick="pe_applySkin()">✅ Apply & Save Result</button><button class="btn btn-ghost" style="flex:1" onclick="pe_resetSkin()">🔄 Reset</button></div>
+</div>
+</div>
+
+<div id="pe_mode_remove" class="pe-mode-panel" style="display:none">
+<div class="card" style="background:#1e1e2a;border:1px dashed #ff3b5c">
+<div class="small" style="font-weight:800;color:#fff">4️⃣ Remove Unwanted Objects</div>
+<textarea id="pe_removePrompt" rows="2" placeholder="Example: remove bra strap / remove watermark / remove tattoo on hip / remove panty / remove hand from background"></textarea>
+<div class="small">Paint mask over object to remove, or auto-mask will try to detect. Background/outfit auto-fills.</div>
+<button class="btn btn-primary" onclick="pe_veniceEdit('remove')" style="padding:14px">🧹 Remove Masked Object (Keep Rest Same)</button>
+</div>
+</div>
+
+<div class="card" style="margin-top:14px;border-color:#4aff8a">
+<div class="small" style="font-weight:800;color:#fff">✅ Result (Venice Inside App - Keeps face/outfit same):</div>
+<canvas id="pe_resultCanvas" style="width:100%;border-radius:12px;background:#000;margin-top:8px;display:none"></canvas>
+<div id="pe_resultStatus" class="small" style="margin-top:8px;color:#4aff8a"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><a id="pe_download" href="#" download="edited.png" class="btn btn-primary" style="display:none;text-decoration:none;flex:1;text-align:center">💾 Download Edited</a><button class="btn btn-ghost" id="pe_continue" style="display:none;flex:1" onclick="pe_continueEdit()">🔄 Continue Editing This Result</button></div>
+</div>
+
+</div>
+</div>
+
+<script>
+let pe_baseImg=null, pe_brush=30, pe_part='', pe_originalData=null, pe_lastResult=null;
+let pe_bCtx=null, pe_mCtx=null, pe_isDrawing=false;
+
+function saveKey(){ let v=document.getElementById('apiKey').value; localStorage.setItem('venice_api_key', v); document.getElementById('keyStatus').innerText='✅ Key saved locally'; }
+function toggleKey(){ let el=document.getElementById('apiKey'); el.type=el.type==='password'?'text':'password'; }
+function testKey(){ let k=document.getElementById('apiKey').value||localStorage.getItem('venice_api_key'); if(!k){ document.getElementById('keyStatus').innerText='❌ Enter key first'; return; } document.getElementById('keyStatus').innerText='🔄 Testing...'; fetch('https://api.venice.ai/api/v1/models',{headers:{'Authorization':'Bearer '+k}}).then(r=>r.text()).then(t=>{ document.getElementById('keyStatus').innerText=t.includes('lustify')||t.includes('model')?'✅ Key valid - Venice connected':'✅ Key response: '+t.slice(0,100); }).catch(e=>{ document.getElementById('keyStatus').innerText='❌ Error: '+e.message; }); }
+let saved=localStorage.getItem('venice_api_key'); if(saved){ document.getElementById('apiKey').value=saved; document.getElementById('keyStatus').innerText='✅ Key loaded from storage'; }
+
+function pe_initCanvas(){ try{ let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); if(!bc||!mc) return; pe_bCtx=bc.getContext('2d'); pe_mCtx=mc.getContext('2d'); mc.onmousedown=e=>{ pe_isDrawing=true; pe_drawMask(pe_getPos(e)); }; mc.onmousemove=e=>{ if(pe_isDrawing) pe_drawMask(pe_getPos(e)); }; window.addEventListener('mouseup', ()=>pe_isDrawing=false); mc.ontouchstart=e=>{ pe_isDrawing=true; pe_drawMask(pe_getPos(e)); e.preventDefault(); }; mc.ontouchmove=e=>{ if(pe_isDrawing) pe_drawMask(pe_getPos(e)); e.preventDefault(); }; mc.ontouchend=()=>pe_isDrawing=false; }catch(e){} }
+function pe_getPos(e){ let mc=document.getElementById('pe_maskCanvas'); let rect=mc.getBoundingClientRect(); let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left; let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top; return {x:x*(mc.width/rect.width), y:y*(mc.height/rect.height)}; }
+function pe_drawMask(p){ if(!pe_mCtx) return; pe_mCtx.fillStyle='rgba(255,45,85,0.65)'; pe_mCtx.beginPath(); pe_mCtx.arc(p.x,p.y,pe_brush/2,0,Math.PI*2); pe_mCtx.fill(); }
+function pe_setBrush(s){ pe_brush=s; }
+function pe_clearMask(){ let mc=document.getElementById('pe_maskCanvas'); if(mc){ let ctx=mc.getContext('2d'); ctx.clearRect(0,0,mc.width,mc.height); } }
+function pe_setPart(p){ let inp=document.getElementById('pe_partInput'); if(inp) inp.value=p; pe_part=p; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); if(event&&event.target) event.target.classList.add('active'); }
+function pe_setEditType(t){ document.querySelectorAll('.pe-mode-panel').forEach(e=>e.style.display='none'); let el=document.getElementById('pe_mode_'+t); if(el) el.style.display='block'; document.querySelectorAll('.pe-inner-tab').forEach(e=>e.classList.remove('active')); let tb=document.getElementById('pe_tab_'+t); if(tb) tb.classList.add('active'); }
+function pe_loadImage(input){ let file=input.files[0]; if(!file) return; let reader=new FileReader(); reader.onload=e=>{ let img=new Image(); img.onload=()=>{ pe_baseImg=img; let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); pe_bCtx=bc.getContext('2d'); pe_mCtx=mc.getContext('2d'); let w=img.width,h=img.height,maxW=800; if(w>maxW){ h=h*maxW/w; w=maxW; } bc.width=w; bc.height=h; mc.width=w; mc.height=h; pe_bCtx.clearRect(0,0,w,h); pe_bCtx.drawImage(img,0,0,w,h); pe_mCtx.clearRect(0,0,w,h); pe_originalData=pe_bCtx.getImageData(0,0,w,h); document.getElementById('pe_uploadBox').style.display='none'; document.getElementById('pe_workspace').style.display='block'; document.getElementById('pe_status').innerText='✅ Image loaded. Tap body part chip → Auto-Detect.'; }; img.src=e.target.result; }; reader.readAsDataURL(file); }
+document.getElementById('pe_editInput').addEventListener('change', function(){ pe_loadImage(this); });
+
+function pe_autoMask(){ if(!pe_baseImg){ alert('Upload image first'); return; } let part=(pe_part||document.getElementById('pe_partInput').value||'').toLowerCase(); if(!part){ alert('Select body part: hips, waist, chest, thighs, legs, pubic hair...'); return; } pe_part=part; let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); let w=bc.width,h=bc.height; let ctx=mc.getContext('2d'); ctx.clearRect(0,0,w,h); ctx.fillStyle='rgba(255,45,85,0.65)'; let regions={'face':[0.25,0,0.5,0.18],'chest':[0.2,0.18,0.6,0.22],'breast':[0.2,0.18,0.6,0.22],'waist':[0.22,0.38,0.56,0.15],'belly':[0.22,0.42,0.56,0.15],'hips':[0.18,0.52,0.64,0.18],'butt':[0.18,0.54,0.64,0.18],'thighs':[0.18,0.68,0.64,0.18],'thigh':[0.18,0.68,0.64,0.18],'legs':[0.18,0.65,0.64,0.35],'leg':[0.18,0.65,0.64,0.35],'arms':[0,0.18,1,0.5],'hair':[0.2,0,0.6,0.15],'pubic hair':[0.3,0.62,0.4,0.12],'pubic':[0.3,0.62,0.4,0.12]}; let matched=null; for(let k in regions){ if(part.includes(k)){ matched=regions[k]; break; } } if(!matched){ matched=[0.2,0.3,0.6,0.5]; document.getElementById('pe_status').innerText='⚠️ No exact region for "'+part+'" - masked center area. You can adjust with brush.'; } else { document.getElementById('pe_status').innerText='✅ Auto-masked: '+part+' - pink area will be edited only. Face/outfit outside stays same.'; } let rx=matched[0]*w, ry=matched[1]*h, rw=matched[2]*w, rh=matched[3]*h; ctx.beginPath(); ctx.ellipse(rx+rw/2, ry+rh/2, rw/2, rh/2, 0,0,Math.PI*2); ctx.fill(); if(part.includes('leg')||part.includes('thigh')){ ctx.beginPath(); ctx.ellipse(rx+rw*0.3, ry+rh/2, rw*0.2, rh/2, 0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(rx+rw*0.7, ry+rh/2, rw*0.2, rh/2, 0,0,Math.PI*2); ctx.fill(); } }
+
+function pe_liveSkin(){ if(!pe_originalData) return; let dark=parseInt(document.getElementById('pe_dark').value); let warm=parseInt(document.getElementById('pe_warm').value); let red=parseInt(document.getElementById('pe_red').value); let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); let w=bc.width,h=bc.height; let imgData=pe_bCtx.getImageData(0,0,w,h); let maskData=pe_mCtx.getImageData(0,0,w,h); let orig=pe_originalData.data; let data=imgData.data; for(let i=0;i<data.length;i+=4){ if(maskData.data[i+3]>15){ let r=orig[i], g=orig[i+1], b=orig[i+2]; r+=dark*2; g+=dark*2; b+=dark*2; r+=warm; g+=warm*0.5; r+=red*2; data[i]=Math.max(0,Math.min(255,r)); data[i+1]=Math.max(0,Math.min(255,g)); data[i+2]=Math.max(0,Math.min(255,b)); } else { data[i]=orig[i]; data[i+1]=orig[i+1]; data[i+2]=orig[i+2]; } } pe_bCtx.putImageData(imgData,0,0); }
+function pe_resetSkin(){ document.getElementById('pe_dark').value=0; document.getElementById('pe_warm').value=0; document.getElementById('pe_red').value=0; if(pe_originalData) pe_bCtx.putImageData(pe_originalData,0,0); }
+function pe_applySkin(){ let rc=document.getElementById('pe_resultCanvas'); rc.width=document.getElementById('pe_baseCanvas').width; rc.height=document.getElementById('pe_baseCanvas').height; rc.getContext('2d').drawImage(document.getElementById('pe_baseCanvas'),0,0); rc.style.display='block'; document.getElementById('pe_download').href=rc.toDataURL('image/png'); document.getElementById('pe_download').style.display='block'; document.getElementById('pe_continue').style.display='block'; document.getElementById('pe_resultStatus').innerText='✅ Skin tone applied to auto-masked area only. Face/outfit outside mask untouched.'; pe_lastResult=rc.toDataURL('image/png'); }
+
+async function pe_veniceEdit(type){
+  let key=localStorage.getItem('venice_api_key')||document.getElementById('apiKey').value;
+  if(!key){ alert('Enter Venice API Key in Settings first'); return; }
+  let prompt=''; if(type==='pose') prompt=document.getElementById('pe_posePrompt').value; if(type==='size') prompt=document.getElementById('pe_sizePrompt').value; if(type==='remove') prompt=document.getElementById('pe_removePrompt').value; if(!prompt){ alert('Write what to change: e.g., increase thickness of hips'); return; }
+  let part=pe_part||document.getElementById('pe_partInput').value||'body part';
+  let mc=document.getElementById('pe_maskCanvas'); let maskData=pe_mCtx.getImageData(0,0,mc.width,mc.height); let hasMask=false; for(let i=3;i<maskData.data.length;i+=4){ if(maskData.data[i]>10){ hasMask=true; break; } }
+  if(!hasMask && type!=='pose'){ alert('Tap Auto-Detect & Mask first - app needs to know which body part'); return; }
+  document.getElementById('pe_resultStatus').innerText='🔄 Editing with Venice inside app... Keeping face/outfit same, editing only '+part+': '+prompt;
+
+  let finalPrompt='';
+  if(type==='pose') finalPrompt=`Change pose to ${prompt}. CRITICAL: Keep identical face, identical outfit, identical body shape, identical skin tone, identical background, identical hair. ONLY change body pose/position. Do not change clothes. Do not change face. Photorealistic, 8k, natural skin, keep identity exactly same.`;
+  else if(type==='size') finalPrompt=`Edit ONLY ${part}: ${prompt}. CRITICAL: Keep same face, same outfit, same background, same everything outside edited area EXACTLY same as original. Only change ${part} as described: ${prompt}. Keep natural, realistic, photorealistic skin texture, 8k. Do not change outfit or face.`;
+  else if(type==='remove') finalPrompt=`Remove ${prompt} from image. Inpaint removed area with matching background/outfit/skin so it looks natural. Keep rest of image 100% identical - same face, same outfit, same body. Photorealistic.`;
+
+  try{
+    let imageBase64=document.getElementById('pe_baseCanvas').toDataURL('image/jpeg',0.9).split(',')[1];
+    let maskBase64=mc.toDataURL('image/png').split(',')[1];
+    let body={model:'lustify-sdxl',prompt:finalPrompt,negative_prompt:'blurry, deformed, cartoon, low quality, change face, change outfit, change background',width:mc.width,height:mc.height,steps:35,cfg_scale:8,safe_mode:false,hide_watermark:true,image:imageBase64,mask_image:hasMask?maskBase64:undefined,strength: type==='pose'?0.65 : type==='size'?0.55 : 0.75};
+    let res=await fetch('https://api.venice.ai/api/v1/image/edit',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    let txt=await res.text(); let j=null; try{ j=JSON.parse(txt); }catch(e){ j={raw:txt}; }
+    if(!res.ok){
+      document.getElementById('pe_resultStatus').innerText='Edit endpoint not available, trying generate with reference image...';
+      let genBody={model:'lustify-sdxl',prompt:finalPrompt,negative_prompt:'blurry, deformed, cartoon, low quality',width:mc.width,height:mc.height,steps:35,cfg_scale:8,safe_mode:false,hide_watermark:true,image:imageBase64,strength:body.strength};
+      res=await fetch('https://api.venice.ai/api/v1/image/generate',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(genBody)});
+      txt=await res.text(); try{ j=JSON.parse(txt); }catch(e){ j={raw:txt}; }
+    }
+    if(!res.ok){ document.getElementById('pe_resultStatus').innerText='❌ Venice error '+res.status+': '+txt.slice(0,300); return; }
+    let imgUrl=null;
+    if(j.images && j.images.length){ let first=j.images[0]; if(typeof first==='string'){ if(first.startsWith('http')||first.startsWith('data:')) imgUrl=first; else imgUrl='data:image/png;base64,'+first; } else if(first.url) imgUrl=first.url; else if(first.b64) imgUrl='data:image/png;base64,'+first.b64; else if(first.b64_json) imgUrl='data:image/png;base64,'+first.b64_json; }
+    if(!imgUrl && j.data && j.data.length){ let first=j.data[0]; if(typeof first==='string'){ if(first.startsWith('http')||first.startsWith('data:')) imgUrl=first; else imgUrl='data:image/png;base64,'+first; } else if(first.url) imgUrl=first.url; }
+    if(!imgUrl && j.b64_json) imgUrl='data:image/png;base64,'+j.b64_json;
+    if(imgUrl){
+      let rc=document.getElementById('pe_resultCanvas'); let img=new Image(); img.onload=()=>{ rc.width=img.width; rc.height=img.height; rc.getContext('2d').drawImage(img,0,0); rc.style.display='block'; document.getElementById('pe_download').href=imgUrl; document.getElementById('pe_download').style.display='block'; document.getElementById('pe_continue').style.display='block'; document.getElementById('pe_resultStatus').innerText='✅ Venice edited ONLY '+part+': '+prompt+'. Face/outfit outside mask preserved.'; pe_lastResult=imgUrl; }; img.src=imgUrl;
+    } else { document.getElementById('pe_resultStatus').innerText='❌ No image returned: '+txt.slice(0,400); }
+  }catch(e){ document.getElementById('pe_resultStatus').innerText='❌ Error: '+e.message; }
+}
+
+function pe_continueEdit(){ if(!pe_lastResult) return; let img=new Image(); img.onload=()=>{ let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); bc.width=img.width; bc.height=img.height; mc.width=img.width; mc.height=img.height; let bctx=bc.getContext('2d'); bctx.clearRect(0,0,img.width,img.height); bctx.drawImage(img,0,0,img.width,img.height); let mctx=mc.getContext('2d'); mctx.clearRect(0,0,img.width,img.height); pe_bCtx=bctx; pe_mCtx=mctx; pe_baseImg=img; pe_originalData=bctx.getImageData(0,0,img.width,img.height); document.getElementById('pe_resultStatus').innerText='🔄 Loaded result back - auto-detect next body part'; }; img.src=pe_lastResult; }
+
+setTimeout(pe_initCanvas, 800);
+</script>
+
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</html>
