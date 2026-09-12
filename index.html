@@ -1,235 +1,846 @@
-
 <!DOCTYPE html>
-<html>
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PRECISION EDITOR V2 - CLEAN</title>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qwen Image Edit Studio</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0a0e;color:#eee;font-family:system-ui;padding:12px;padding-bottom:120px}
-.header{background:#12121a;padding:14px;border-radius:12px;border:1px solid #333;margin-bottom:12px}
-.card{background:#15151d;border:1px solid #333;border-radius:14px;padding:14px;margin-top:12px}
-.btn{padding:12px 16px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;width:100%;margin-top:8px}
-.btn-primary{background:#ff3b5c;color:#fff}
-.btn-ghost{background:#2a2a3a;color:#fff}
-.btn-green{background:#1a8a4a;color:#fff}
-input,textarea,select{width:100%;padding:12px;background:#1e1e2a;border:1px solid #444;color:#fff;border-radius:10px;margin-top:8px}
-.small{color:#aaa;font-size:12px;line-height:1.4;margin-top:6px}
-.chip{padding:10px 14px;border-radius:20px;border:1px solid #444;background:#1e1e2a;font-size:12px;cursor:pointer;display:inline-block;margin:4px}
-.chip.active{background:#4aff8a;color:#000;border-color:#4aff8a;font-weight:800}
-.pe-inner-tab{padding:10px 16px;border-radius:20px;border:1px solid #444;background:#1e1e2a;color:#aaa;cursor:pointer;display:inline-block;margin:4px;font-weight:700}
-.pe-inner-tab.active{background:#ff3b5c;color:#fff;border-color:#ff3b5c}
-canvas{width:100%;border-radius:12px;background:#000}
-#pe_baseCanvas,#pe_maskCanvas{width:100%;border-radius:12px;background:#000}
-.pe-mode-panel{margin-top:10px}
+  :root{
+    --bg:#0b0e14; --panel:#141922; --panel-2:#1a212c; --line:#252d3a;
+    --text:#e6ebf2; --muted:#8b98a9; --accent:#ff7a45; --accent-2:#ffb020;
+    --green:#22c55e; --red:#ef4444; --blue:#5b8def;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    font-size:14px;line-height:1.5}
+  a{color:var(--accent-2)}
+  .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
+  header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+  .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#ff7a45,#ff3d81);font-size:18px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+    border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
+  .pill .dot{width:8px;height:8px;border-radius:99px;background:var(--muted)}
+  .pill.ok .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .pill.err .dot{background:var(--red)}
+  .pill.busy .dot{background:var(--accent-2);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.3}}
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
+  .tab{padding:9px 14px;border:1px solid transparent;border-bottom:none;border-radius:10px 10px 0 0;
+    background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600}
+  .tab.active{background:var(--panel);border-color:var(--line);color:var(--text)}
+  .tab:hover{color:var(--text)}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+  .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;background:#1f3a2a;color:#6ee7a0;font-size:11px;font-weight:700;margin-left:8px;vertical-align:middle}
+  .note{background:#2a1a12;border:1px solid #4a2a18;border-radius:10px;padding:10px 12px;font-size:12px;color:#f0c9a8;margin-bottom:12px}
+  .note b{color:#ffb020}
+  .drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:var(--panel-2);
+    padding:26px 16px;text-align:center;cursor:pointer;transition:.15s;position:relative}
+  .drop:hover,.drop.over{border-color:var(--accent);background:#1c2330}
+  .drop .big{font-size:26px;line-height:1;margin-bottom:8px}
+  .drop .sub{color:var(--muted);font-size:12px;margin-top:4px}
+  .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0e1420}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:99px;border:none;
+    background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:12px;line-height:1;padding:0}
+  .thumb .idx{position:absolute;bottom:2px;left:4px;font-size:10px;color:#fff;text-shadow:0 1px 3px #000}
+  label.field{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;font-weight:600}
+  textarea,input[type=text],input[type=number],input[type=password],select{
+    width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);
+    padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
+  textarea{resize:vertical;min-height:78px}
+  textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{background:#0e1420;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;
+    color:var(--muted);cursor:pointer}
+  .chip:hover{border-color:var(--accent);color:var(--text)}
+  .btn{width:100%;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),#ff3d81);color:#fff;margin-top:14px}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-weight:600;margin-top:0}
+  .btn.sm{padding:7px 12px;width:auto;font-size:12px;margin:0}
+  .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .out{min-height:340px;border:1px solid var(--line);border-radius:12px;background:#0e1420;
+    display:grid;place-items:center;overflow:hidden;padding:10px}
+  .out img{max-width:100%;max-height:560px;border-radius:8px;display:block}
+  .out .ph{color:var(--muted);text-align:center;font-size:13px;padding:30px 16px}
+  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);padding:3px 0}
+  .kv b{color:var(--text);font-weight:600}
+  .hist{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
+  .hist img{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
+  .hist img:hover{border-color:var(--accent)}
+  .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px;white-space:pre-wrap}
+  .status.err{color:#ff9b9b}
+  .hidden{display:none!important}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
+  pre.api{background:#0e1420;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;
+    max-height:280px;font-size:11.5px;color:#9fb3cc}
+  .safety{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .safety.blocked{color:#ff9b9b;font-weight:600}
+  .flex-end{display:flex;justify-content:flex-end}
+  .split{display:flex;gap:8px}
+  .split>*{flex:1}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
+  .toggle input{width:16px;height:16px;accent-color:var(--accent)}
+  .gen-form .fld{margin-bottom:10px}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="header">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<div><b style="color:#ff3b5c;font-size:18px">🎯 PRECISION EDITOR V2 - CLEAN</b><div class="small">Standalone App - No tabs, no conflicts. Upload → Auto-Mask Body Part → Edit only that part. Face/outfit stays 100% same.</div></div>
-</div>
+  <header class="top">
+    <div class="brand">
+      <div class="logo">🪄</div>
+      <div>
+        <div>Qwen Image Edit Studio</div>
+        <div style="font-size:11.5px;color:var(--muted);font-weight:500">Your personal prompt-driven image editor · powered by Hugging Face Spaces</div>
+      </div>
+    </div>
+    <div class="inline">
+      <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="lora">LoRA Editor</button>
+    <button class="tab" data-tab="custom">Custom Space</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+
+  <!-- ============ TAB 1: LoRA Editor ============ -->
+  <section id="tab-lora">
+    <div class="grid">
+      <!-- LEFT: inputs -->
+      <div>
+        <div class="card">
+          <h3 style="display:flex;align-items:center">Qwen-Image-Edit<span class="badge" id="stepBadge">4-Step Fast</span></h3>
+          <div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">AIO · prompt-driven image editing · 19 LoRA adapters</div>
+
+          <div class="note">
+            By using this tool you agree to comply with the
+            <a href="https://huggingface.co/content-policy" target="_blank" rel="noopener">Hugging&nbsp;Face Content Policy</a>.
+            You are solely responsible for any images generated. The author assumes no liability for user-generated outputs.
+          </div>
+
+          <label class="field">Upload image(s) — select several at once, drag-n-drop, or paste (Ctrl/⌘+V)</label>
+          <div class="drop" id="drop">
+            <div class="big">⬆</div>
+            <div><b>Drop files here</b></div>
+            <div class="sub">— or —</div>
+            <div class="sub">Click to upload</div>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" multiple class="hidden" />
+
+          <label class="field" style="margin-top:14px">📋 Paste image here (Ctrl+V) — or click the clipboard icon</label>
+          <div class="drop" id="pasteZone" tabindex="0">
+            <div class="big">📋</div>
+            <div><b>Paste from Clipboard</b></div>
+            <div class="sub">focus this box and press Ctrl/⌘+V</div>
+          </div>
+
+          <div class="thumbs" id="thumbs"></div>
+
+          <label class="field" for="prompt">Prompt</label>
+          <textarea id="prompt" placeholder="e.g. Transform into anime. / Rotate the camera 45 degrees to the right. / Apply the lighting from image 2 to image 1."></textarea>
+          <div class="chips" id="promptChips"></div>
+
+          <label class="field" for="lora">LoRA adapter</label>
+          <select id="lora"></select>
+
+          <div class="row">
+            <div>
+              <label class="field" for="steps">Steps</label>
+              <input type="number" id="steps" value="4" min="1" max="50" />
+            </div>
+            <div>
+              <label class="field" for="guidance">Guidance scale</label>
+              <input type="number" id="guidance" value="4" min="0" max="20" step="0.5" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label class="field" for="seed">Seed</label>
+              <input type="number" id="seed" value="0" min="0" />
+            </div>
+            <div class="toggle" style="margin-top:26px">
+              <input type="checkbox" id="randomize" /> <label for="randomize" style="margin:0">Randomize seed</label>
+            </div>
+          </div>
+
+          <button class="btn" id="generate">✨ Generate</button>
+          <div class="split" style="margin-top:8px">
+            <button class="btn secondary sm" id="clearAll" style="width:100%">Clear images</button>
+            <button class="btn secondary sm" id="checkSafety" style="width:100%">Run safety check</button>
+          </div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: output -->
+      <div>
+        <div class="card">
+          <h3>Result</h3>
+          <div class="out" id="out">
+            <div class="ph">Drop or paste an image, write a prompt, then hit Generate.<br /><br />
+              First run may take 30–60 s while the Space wakes up.</div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="kv"><span>Seed used</span><b id="metaSeed">—</b></div>
+            <div class="kv"><span>LoRA</span><b id="metaLora">—</b></div>
+            <div class="kv"><span>Time</span><b id="metaTime">—</b></div>
+          </div>
+          <div class="split" style="margin-top:10px">
+            <button class="btn secondary sm" id="useAsInput" style="width:100%">↩ Use as input</button>
+            <button class="btn secondary sm" id="saveResult" style="width:100%">⤓ Save PNG</button>
+          </div>
+          <div class="hint" id="saveHint"></div>
+        </div>
+        <div class="card">
+          <h3>Session history</h3>
+          <div class="hist" id="hist"><span class="hint">No results yet.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: Custom Space ============ -->
+  <section id="tab-custom" class="hidden">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h3>Any image-editing Space</h3>
+          <div class="hint" style="margin-bottom:10px">
+            Connect to any public Gradio-based Space. The form below is generated from that Space's own API,
+            so it adapts to whatever inputs it declares.
+          </div>
+
+          <label class="field" for="customSpace">Space ID</label>
+          <input type="text" id="customSpace" value="selfit-camera/Omni-Image-Editor" />
+          <div class="chips" id="spacePresets"></div>
+
+          <div class="inline" style="margin-top:12px">
+            <button class="btn secondary sm" id="connectCustom">Connect</button>
+            <button class="btn secondary sm" id="inspectApi">Inspect API</button>
+            <span class="status" id="customStatus" style="margin:0"></span>
+          </div>
+
+          <label class="field" for="endpoint" style="margin-top:14px">Endpoint</label>
+          <select id="endpoint"><option value="">— connect to list endpoints —</option></select>
+
+          <div id="genForm" class="gen-form" style="margin-top:12px"></div>
+          <button class="btn" id="runCustom">▶ Run</button>
+          <div class="status" id="customRunStatus"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3>API details</h3>
+          <pre class="api" id="apiDump">Not inspected yet.</pre>
+        </div>
+        <div class="card">
+          <h3>Result</h3>
+          <div class="out" id="customOut"><div class="ph">Nothing yet.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: Settings ============ -->
+  <section id="tab-settings" class="hidden">
+    <div class="card" style="max-width:720px">
+      <h3>Connection</h3>
+      <label class="field" for="spaceId">Default Space (LoRA Editor)</label>
+      <input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast" />
+      <div class="hint">The app calls this Space's <span class="mono">/edit_image</span> endpoint directly from your browser.</div>
+
+      <label class="field" for="token">Hugging Face token (optional)</label>
+      <input type="password" id="token" placeholder="hf_..." autocomplete="off" />
+      <div class="hint">
+        Optional. A read token can raise your queue priority and lets you use private Spaces.
+        It is kept in memory for this session only — never stored or sent anywhere except Hugging Face.
+      </div>
+
+      <div class="inline" style="margin-top:14px">
+        <button class="btn secondary sm" id="applySettings">Apply &amp; connect</button>
+        <button class="btn secondary sm" id="disconnect">Disconnect</button>
+      </div>
+      <div class="status" id="settingsStatus"></div>
+
+      <h3 style="margin-top:22px">Notes &amp; limits</h3>
+      <div class="hint">
+        • Free Spaces sleep when idle; the first request can take 30–60 s to wake and will queue under load.<br />
+        • Images are sent to the Space as base64 JSON, so nothing is uploaded to a third party of your own.<br />
+        • <b>Save PNG</b> may be blocked when this page runs inside a sandboxed preview iframe — open the file directly in your browser (or host it) and it works normally.<br />
+        • The Space applies a content filter (NCII guard); blocked prompts return a message instead of an image.<br />
+        • Some Spaces expose a plain <span class="mono">/predict</span> endpoint instead of named ones — use the Custom Space tab for those.
+      </div>
+    </div>
+  </section>
 </div>
 
-<div class="card">
-<b>⚙️ Venice API Key</b>
+<script type="module">
+import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
-<div style="display:flex;gap:8px;margin-top:8px"><input type="password" id="apiKey" placeholder="Paste Venice API Key here" style="flex:1"><button class="btn btn-ghost" style="width:80px" onclick="toggleKey()">👁️</button></div>
-<div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="testKey()">Test Key</button><button class="btn btn-ghost" onclick="saveKey()">Save Key</button></div>
-<div id="keyStatus" class="small" style="margin-top:6px"></div>
-</div>
+/* ------------------------------------------------------------------ *
+ *  Config
+ * ------------------------------------------------------------------ */
+const LORAS = [
+  "Multiple-Angles","Photo-to-Anime","Anime-V2","Light-Migration","Upscaler",
+  "Style-Transfer","Manga-Tone","Anything2Real","Fal-Multiple-Angles","Polaroid-Photo",
+  "Unblur-Anything","Midnight-Noir-Eyes-Spotlight","Hyper-Realistic-Portrait",
+  "Ultra-Realistic-Portrait","Pixar-Inspired-3D","Noir-Comic-Book","Any-light",
+  "Studio-DeLight","Cinematic-FlatLog"
+];
 
-<div class="card">
-<b>📸 Upload Image</b>
-<div id="pe_uploadBox" onclick="document.getElementById('pe_editInput').click()" style="height:140px;border:2px dashed #555;border-radius:12px;background:#1e1e2a;display:flex;align-items:center;justify-content:center;flex-direction:column;margin-top:10px;cursor:pointer">
-<span style="font-size:32px">📸</span><span class="small" style="margin-top:8px">Tap to Upload from Gallery (Any image - dressed/nude)</span>
-</div>
-<input type="file" id="pe_editInput" accept="image/*" style="display:none">
+const PROMPT_PRESETS = [
+  { lora:"Photo-to-Anime",            prompt:"Transform into anime." },
+  { lora:"Multiple-Angles",           prompt:"Rotate the camera 45 degrees to the right." },
+  { lora:"Fal-Multiple-Angles",       prompt:"Front-right quarter view." },
+  { lora:"Upscaler",                  prompt:"Upscale this picture to 4K resolution." },
+  { lora:"Unblur-Anything",           prompt:"Unblur and upscale." },
+  { lora:"Pixar-Inspired-3D",         prompt:"Transform it into Pixar-inspired 3D." },
+  { lora:"Hyper-Realistic-Portrait",  prompt:"Transform into a hyper-realistic face portrait." },
+  { lora:"Studio-DeLight",            prompt:"Neutral uniform lighting. Preserve identity and composition." },
+  { lora:"Cinematic-FlatLog",         prompt:"Transform into a cinematic flat log." },
+  { lora:"Any-light",                 prompt:"Apply the lighting from image 2 to image 1." },
+  { lora:"Light-Migration",           prompt:"Refer to the color tone, remove the original lighting from Image 1, and relight Image 1 based on the lighting and color tone of Image 2." },
+  { lora:"Style-Transfer",            prompt:"Convert Image 1 to the style of Image 2." },
+  { lora:"Anything2Real",             prompt:"Change the picture to realistic photograph." },
+  { lora:"Polaroid-Photo",            prompt:"cinematic polaroid with soft grain subtle vignette gentle lighting white frame handwritten photographed preserving realistic texture and details." },
+  { lora:"Noir-Comic-Book",           prompt:"Transform into a noir comic book style." },
+  { lora:"Manga-Tone",                prompt:"Paint with manga tone." },
+];
 
-<div id="pe_workspace" style="display:none">
-<div style="position:relative;margin-top:14px">
-<canvas id="pe_baseCanvas"></canvas>
-<canvas id="pe_maskCanvas" style="position:absolute;left:0;top:0;opacity:0.6"></canvas>
-</div>
-<div id="pe_status" class="small" style="margin-top:8px;color:#4aff8a;font-weight:700">Ready</div>
+const SPACE_PRESETS = [
+  "selfit-camera/Omni-Image-Editor",
+  "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
+  "linoyts/Qwen-Image-Edit-Angles",
+  "Qwen/Qwen-Image-Edit",
+  "prithivMLmods/Qwen-Image-Edit-2509-LoRAs-Fast",
+  "multimodalart/Qwen-Image-Edit-Fast",
+  "linoyts/Qwen-Image-Edit-Inpaint",
+  "fffiloni/diffusers-image-outpaint"
+];
 
-<div class="card" style="background:#1e1e2a">
-<div class="small" style="font-weight:800;color:#fff;font-size:13px">STEP 1: What body part to edit? (App auto-masks it - no manual painting needed)</div>
-<div style="margin-top:8px">
-<span class="chip" onclick="pe_setPart('hips')">Hips</span>
-<span class="chip" onclick="pe_setPart('waist')">Waist</span>
-<span class="chip" onclick="pe_setPart('thighs')">Thighs</span>
-<span class="chip" onclick="pe_setPart('chest')">Chest/Breast</span>
-<span class="chip" onclick="pe_setPart('butt')">Butt</span>
-<span class="chip" onclick="pe_setPart('legs')">Legs</span>
-<span class="chip" onclick="pe_setPart('belly')">Belly</span>
-<span class="chip" onclick="pe_setPart('arms')">Arms</span>
-<span class="chip" onclick="pe_setPart('hair')">Hair</span>
-<span class="chip" onclick="pe_setPart('pubic hair')">Pubic Hair</span>
-</div>
-<input type="text" id="pe_partInput" placeholder="Or type: hips, waist, chest, thighs, legs, pubic hair...">
-<button class="btn btn-primary" onclick="pe_autoMask()">🎯 Auto-Detect & Mask This Body Part</button>
-<div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-ghost" onclick="pe_setBrush(15)">Small Brush</button><button class="btn btn-ghost" onclick="pe_setBrush(30)">Medium</button><button class="btn btn-ghost" onclick="pe_setBrush(60)">Large</button><button class="btn btn-ghost" onclick="pe_clearMask()">🧹 Clear Mask</button></div>
-<div class="small">Pink = will be edited. Outside pink = 100% same (face/outfit). You can adjust with brush after auto-mask.</div>
-</div>
+/* ------------------------------------------------------------------ *
+ *  State (in-memory only — no localStorage in sandboxed previews)
+ * ------------------------------------------------------------------ */
+const S = {
+  loraClient: null,
+  loraSpaceId: "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
+  customClient: null,
+  customSpaceId: null,
+  apiInfo: null,
+  token: "",
+  images: [],          // { id, name, dataUrl }
+  lastResult: null,
+  history: [],
+  busy: false,
+  imgSeq: 1
+};
 
-<div style="display:flex;gap:6px;overflow:auto;margin-top:14px;padding:6px 0">
-<div class="pe-inner-tab active" onclick="pe_setEditType('pose')" id="pe_tab_pose">1️⃣ Change Pose</div>
-<div class="pe-inner-tab" onclick="pe_setEditType('size')" id="pe_tab_size">2️⃣ Thickness/Size/Length</div>
-<div class="pe-inner-tab" onclick="pe_setEditType('skin')" id="pe_tab_skin">3️⃣ Skin Tone</div>
-<div class="pe-inner-tab" onclick="pe_setEditType('remove')" id="pe_tab_remove">4️⃣ Remove Object</div>
-</div>
+/* ------------------------------------------------------------------ *
+ *  DOM helpers
+ * ------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
 
-<div id="pe_mode_pose" class="pe-mode-panel">
-<div class="card" style="background:#1e1e2a;border:1px dashed #4aff8a">
-<div class="small" style="font-weight:800;color:#fff">1️⃣ Change in Pose - Keeps outfit/face/body same, only position changes</div>
-<textarea id="pe_posePrompt" rows="2" placeholder="Example: change pose to sitting with legs crossed, hands on knees, back slightly arched"></textarea>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-<span class="chip" onclick="document.getElementById('pe_posePrompt').value='standing with hands behind head, legs slightly apart'">Hands Behind</span>
-<span class="chip" onclick="document.getElementById('pe_posePrompt').value='sitting with legs crossed, leaning forward'">Sitting Cross</span>
-<span class="chip" onclick="document.getElementById('pe_posePrompt').value='lying on side, one leg bent, hand on hip'">Lying Side</span>
-</div>
-<button class="btn btn-primary" onclick="pe_veniceEdit('pose')" style="padding:14px">🔥 Change Pose - Keep Outfit/Face Same (Venice Inside)</button>
-</div>
-</div>
-
-<div id="pe_mode_size" class="pe-mode-panel" style="display:none">
-<div class="card" style="background:#1e1e2a;border:1px dashed #ffcc00">
-<div class="small" style="font-weight:800;color:#fff">2️⃣ Change thickness/size/length of particular body part (masked only)</div>
-<textarea id="pe_sizePrompt" rows="3" placeholder="Examples:\n• increase thickness of hips slightly natural\n• reduce size of waist, make slimmer\n• increase size of chest slightly natural\n• increase length of legs slightly\n• increase length of pubic hair"></textarea>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase thickness of hips slightly, natural curve'">+ Hips Thick</span>
-<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='reduce thickness of waist, make slimmer'">- Waist</span>
-<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase size of chest slightly, natural'">+ Chest</span>
-<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='reduce size of chest slightly'">- Chest</span>
-<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase length of legs slightly, keep proportions'">+ Leg Length</span>
-<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase thickness of thighs slightly'">+ Thighs</span>
-<span class="chip" onclick="document.getElementById('pe_sizePrompt').value='increase length of pubic hair'">+ Pubic Hair Length</span>
-</div>
-<div class="small" style="color:#ffcc00">App auto-masked that body part (pink). Venice will edit ONLY pink area, keep face/outfit 100% same outside.</div>
-<button class="btn btn-primary" onclick="pe_veniceEdit('size')" style="padding:14px">🔥 Edit Thickness/Size/Length (Masked Part Only)</button>
-</div>
-</div>
-
-<div id="pe_mode_skin" class="pe-mode-panel" style="display:none">
-<div class="card" style="background:#1e1e2a;border:1px dashed #4aff8a">
-<div class="small" style="font-weight:800;color:#fff">3️⃣ Skin Colour/Tone - Slider (masked skin only)</div>
-<div class="small">Auto-mask already selected skin of that body part. Live preview - only pink skin changes, clothes not touched.</div>
-<div style="margin-top:10px"><div class="small">Light ↔ Dark</div><input type="range" id="pe_dark" min="-60" max="60" value="0" oninput="pe_liveSkin()"></div>
-<div style="margin-top:8px"><div class="small">Warm ↔ Cool (Fair → Tanned)</div><input type="range" id="pe_warm" min="-60" max="60" value="0" oninput="pe_liveSkin()"></div>
-<div style="margin-top:8px"><div class="small">Redness / Pink</div><input type="range" id="pe_red" min="-40" max="40" value="0" oninput="pe_liveSkin()"></div>
-<div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-primary" style="flex:1" onclick="pe_applySkin()">✅ Apply & Save Result</button><button class="btn btn-ghost" style="flex:1" onclick="pe_resetSkin()">🔄 Reset</button></div>
-</div>
-</div>
-
-<div id="pe_mode_remove" class="pe-mode-panel" style="display:none">
-<div class="card" style="background:#1e1e2a;border:1px dashed #ff3b5c">
-<div class="small" style="font-weight:800;color:#fff">4️⃣ Remove Unwanted Objects</div>
-<textarea id="pe_removePrompt" rows="2" placeholder="Example: remove bra strap / remove watermark / remove tattoo on hip / remove panty / remove hand from background"></textarea>
-<div class="small">Paint mask over object to remove, or auto-mask will try to detect. Background/outfit auto-fills.</div>
-<button class="btn btn-primary" onclick="pe_veniceEdit('remove')" style="padding:14px">🧹 Remove Masked Object (Keep Rest Same)</button>
-</div>
-</div>
-
-<div class="card" style="margin-top:14px;border-color:#4aff8a">
-<div class="small" style="font-weight:800;color:#fff">✅ Result (Venice Inside App - Keeps face/outfit same):</div>
-<canvas id="pe_resultCanvas" style="width:100%;border-radius:12px;background:#000;margin-top:8px;display:none"></canvas>
-<div id="pe_resultStatus" class="small" style="margin-top:8px;color:#4aff8a"></div>
-<div style="display:flex;gap:8px;margin-top:10px"><a id="pe_download" href="#" download="edited.png" class="btn btn-primary" style="display:none;text-decoration:none;flex:1;text-align:center">💾 Download Edited</a><button class="btn btn-ghost" id="pe_continue" style="display:none;flex:1" onclick="pe_continueEdit()">🔄 Continue Editing This Result</button></div>
-</div>
-
-</div>
-</div>
-
-<script>
-let pe_baseImg=null, pe_brush=30, pe_part='', pe_originalData=null, pe_lastResult=null;
-let pe_bCtx=null, pe_mCtx=null, pe_isDrawing=false;
-
-function saveKey(){ let v=document.getElementById('apiKey').value; localStorage.setItem('venice_api_key', v); document.getElementById('keyStatus').innerText='✅ Key saved locally'; }
-function toggleKey(){ let el=document.getElementById('apiKey'); el.type=el.type==='password'?'text':'password'; }
-function testKey(){ let k=document.getElementById('apiKey').value||localStorage.getItem('venice_api_key'); if(!k){ document.getElementById('keyStatus').innerText='❌ Enter key first'; return; } document.getElementById('keyStatus').innerText='🔄 Testing...'; fetch('https://api.venice.ai/api/v1/models',{headers:{'Authorization':'Bearer '+k}}).then(r=>r.text()).then(t=>{ document.getElementById('keyStatus').innerText=t.includes('lustify')||t.includes('model')?'✅ Key valid - Venice connected':'✅ Key response: '+t.slice(0,100); }).catch(e=>{ document.getElementById('keyStatus').innerText='❌ Error: '+e.message; }); }
-let saved=localStorage.getItem('venice_api_key'); if(saved){ document.getElementById('apiKey').value=saved; document.getElementById('keyStatus').innerText='✅ Key loaded from storage'; }
-
-function pe_initCanvas(){ try{ let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); if(!bc||!mc) return; pe_bCtx=bc.getContext('2d'); pe_mCtx=mc.getContext('2d'); mc.onmousedown=e=>{ pe_isDrawing=true; pe_drawMask(pe_getPos(e)); }; mc.onmousemove=e=>{ if(pe_isDrawing) pe_drawMask(pe_getPos(e)); }; window.addEventListener('mouseup', ()=>pe_isDrawing=false); mc.ontouchstart=e=>{ pe_isDrawing=true; pe_drawMask(pe_getPos(e)); e.preventDefault(); }; mc.ontouchmove=e=>{ if(pe_isDrawing) pe_drawMask(pe_getPos(e)); e.preventDefault(); }; mc.ontouchend=()=>pe_isDrawing=false; }catch(e){} }
-function pe_getPos(e){ let mc=document.getElementById('pe_maskCanvas'); let rect=mc.getBoundingClientRect(); let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left; let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top; return {x:x*(mc.width/rect.width), y:y*(mc.height/rect.height)}; }
-function pe_drawMask(p){ if(!pe_mCtx) return; pe_mCtx.fillStyle='rgba(255,45,85,0.65)'; pe_mCtx.beginPath(); pe_mCtx.arc(p.x,p.y,pe_brush/2,0,Math.PI*2); pe_mCtx.fill(); }
-function pe_setBrush(s){ pe_brush=s; }
-function pe_clearMask(){ let mc=document.getElementById('pe_maskCanvas'); if(mc){ let ctx=mc.getContext('2d'); ctx.clearRect(0,0,mc.width,mc.height); } }
-function pe_setPart(p){ let inp=document.getElementById('pe_partInput'); if(inp) inp.value=p; pe_part=p; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); if(event&&event.target) event.target.classList.add('active'); }
-function pe_setEditType(t){ document.querySelectorAll('.pe-mode-panel').forEach(e=>e.style.display='none'); let el=document.getElementById('pe_mode_'+t); if(el) el.style.display='block'; document.querySelectorAll('.pe-inner-tab').forEach(e=>e.classList.remove('active')); let tb=document.getElementById('pe_tab_'+t); if(tb) tb.classList.add('active'); }
-function pe_loadImage(input){ let file=input.files[0]; if(!file) return; let reader=new FileReader(); reader.onload=e=>{ let img=new Image(); img.onload=()=>{ pe_baseImg=img; let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); pe_bCtx=bc.getContext('2d'); pe_mCtx=mc.getContext('2d'); let w=img.width,h=img.height,maxW=800; if(w>maxW){ h=h*maxW/w; w=maxW; } bc.width=w; bc.height=h; mc.width=w; mc.height=h; pe_bCtx.clearRect(0,0,w,h); pe_bCtx.drawImage(img,0,0,w,h); pe_mCtx.clearRect(0,0,w,h); pe_originalData=pe_bCtx.getImageData(0,0,w,h); document.getElementById('pe_uploadBox').style.display='none'; document.getElementById('pe_workspace').style.display='block'; document.getElementById('pe_status').innerText='✅ Image loaded. Tap body part chip → Auto-Detect.'; }; img.src=e.target.result; }; reader.readAsDataURL(file); }
-document.getElementById('pe_editInput').addEventListener('change', function(){ pe_loadImage(this); });
-
-function pe_autoMask(){ if(!pe_baseImg){ alert('Upload image first'); return; } let part=(pe_part||document.getElementById('pe_partInput').value||'').toLowerCase(); if(!part){ alert('Select body part: hips, waist, chest, thighs, legs, pubic hair...'); return; } pe_part=part; let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); let w=bc.width,h=bc.height; let ctx=mc.getContext('2d'); ctx.clearRect(0,0,w,h); ctx.fillStyle='rgba(255,45,85,0.65)'; let regions={'face':[0.25,0,0.5,0.18],'chest':[0.2,0.18,0.6,0.22],'breast':[0.2,0.18,0.6,0.22],'waist':[0.22,0.38,0.56,0.15],'belly':[0.22,0.42,0.56,0.15],'hips':[0.18,0.52,0.64,0.18],'butt':[0.18,0.54,0.64,0.18],'thighs':[0.18,0.68,0.64,0.18],'thigh':[0.18,0.68,0.64,0.18],'legs':[0.18,0.65,0.64,0.35],'leg':[0.18,0.65,0.64,0.35],'arms':[0,0.18,1,0.5],'hair':[0.2,0,0.6,0.15],'pubic hair':[0.3,0.62,0.4,0.12],'pubic':[0.3,0.62,0.4,0.12]}; let matched=null; for(let k in regions){ if(part.includes(k)){ matched=regions[k]; break; } } if(!matched){ matched=[0.2,0.3,0.6,0.5]; document.getElementById('pe_status').innerText='⚠️ No exact region for "'+part+'" - masked center area. You can adjust with brush.'; } else { document.getElementById('pe_status').innerText='✅ Auto-masked: '+part+' - pink area will be edited only. Face/outfit outside stays same.'; } let rx=matched[0]*w, ry=matched[1]*h, rw=matched[2]*w, rh=matched[3]*h; ctx.beginPath(); ctx.ellipse(rx+rw/2, ry+rh/2, rw/2, rh/2, 0,0,Math.PI*2); ctx.fill(); if(part.includes('leg')||part.includes('thigh')){ ctx.beginPath(); ctx.ellipse(rx+rw*0.3, ry+rh/2, rw*0.2, rh/2, 0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(rx+rw*0.7, ry+rh/2, rw*0.2, rh/2, 0,0,Math.PI*2); ctx.fill(); } }
-
-function pe_liveSkin(){ if(!pe_originalData) return; let dark=parseInt(document.getElementById('pe_dark').value); let warm=parseInt(document.getElementById('pe_warm').value); let red=parseInt(document.getElementById('pe_red').value); let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); let w=bc.width,h=bc.height; let imgData=pe_bCtx.getImageData(0,0,w,h); let maskData=pe_mCtx.getImageData(0,0,w,h); let orig=pe_originalData.data; let data=imgData.data; for(let i=0;i<data.length;i+=4){ if(maskData.data[i+3]>15){ let r=orig[i], g=orig[i+1], b=orig[i+2]; r+=dark*2; g+=dark*2; b+=dark*2; r+=warm; g+=warm*0.5; r+=red*2; data[i]=Math.max(0,Math.min(255,r)); data[i+1]=Math.max(0,Math.min(255,g)); data[i+2]=Math.max(0,Math.min(255,b)); } else { data[i]=orig[i]; data[i+1]=orig[i+1]; data[i+2]=orig[i+2]; } } pe_bCtx.putImageData(imgData,0,0); }
-function pe_resetSkin(){ document.getElementById('pe_dark').value=0; document.getElementById('pe_warm').value=0; document.getElementById('pe_red').value=0; if(pe_originalData) pe_bCtx.putImageData(pe_originalData,0,0); }
-function pe_applySkin(){ let rc=document.getElementById('pe_resultCanvas'); rc.width=document.getElementById('pe_baseCanvas').width; rc.height=document.getElementById('pe_baseCanvas').height; rc.getContext('2d').drawImage(document.getElementById('pe_baseCanvas'),0,0); rc.style.display='block'; document.getElementById('pe_download').href=rc.toDataURL('image/png'); document.getElementById('pe_download').style.display='block'; document.getElementById('pe_continue').style.display='block'; document.getElementById('pe_resultStatus').innerText='✅ Skin tone applied to auto-masked area only. Face/outfit outside mask untouched.'; pe_lastResult=rc.toDataURL('image/png'); }
-
-async function pe_veniceEdit(type){
-  let key=localStorage.getItem('venice_api_key')||document.getElementById('apiKey').value;
-  if(!key){ alert('Enter Venice API Key in Settings first'); return; }
-  let prompt=''; if(type==='pose') prompt=document.getElementById('pe_posePrompt').value; if(type==='size') prompt=document.getElementById('pe_sizePrompt').value; if(type==='remove') prompt=document.getElementById('pe_removePrompt').value; if(!prompt){ alert('Write what to change: e.g., increase thickness of hips'); return; }
-  let part=pe_part||document.getElementById('pe_partInput').value||'body part';
-  let mc=document.getElementById('pe_maskCanvas'); let maskData=pe_mCtx.getImageData(0,0,mc.width,mc.height); let hasMask=false; for(let i=3;i<maskData.data.length;i+=4){ if(maskData.data[i]>10){ hasMask=true; break; } }
-  if(!hasMask && type!=='pose'){ alert('Tap Auto-Detect & Mask first - app needs to know which body part'); return; }
-  document.getElementById('pe_resultStatus').innerText='🔄 Editing with Venice inside app... Keeping face/outfit same, editing only '+part+': '+prompt;
-
-  let finalPrompt='';
-  if(type==='pose') finalPrompt=`Change pose to ${prompt}. CRITICAL: Keep identical face, identical outfit, identical body shape, identical skin tone, identical background, identical hair. ONLY change body pose/position. Do not change clothes. Do not change face. Photorealistic, 8k, natural skin, keep identity exactly same.`;
-  else if(type==='size') finalPrompt=`Edit ONLY ${part}: ${prompt}. CRITICAL: Keep same face, same outfit, same background, same everything outside edited area EXACTLY same as original. Only change ${part} as described: ${prompt}. Keep natural, realistic, photorealistic skin texture, 8k. Do not change outfit or face.`;
-  else if(type==='remove') finalPrompt=`Remove ${prompt} from image. Inpaint removed area with matching background/outfit/skin so it looks natural. Keep rest of image 100% identical - same face, same outfit, same body. Photorealistic.`;
-
-  try{
-    let imageBase64=document.getElementById('pe_baseCanvas').toDataURL('image/jpeg',0.9).split(',')[1];
-    let maskBase64=mc.toDataURL('image/png').split(',')[1];
-    let body={model:'lustify-sdxl',prompt:finalPrompt,negative_prompt:'blurry, deformed, cartoon, low quality, change face, change outfit, change background',width:mc.width,height:mc.height,steps:35,cfg_scale:8,safe_mode:false,hide_watermark:true,image:imageBase64,mask_image:hasMask?maskBase64:undefined,strength: type==='pose'?0.65 : type==='size'?0.55 : 0.75};
-    let res=await fetch('https://api.venice.ai/api/v1/image/edit',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    let txt=await res.text(); let j=null; try{ j=JSON.parse(txt); }catch(e){ j={raw:txt}; }
-    if(!res.ok){
-      document.getElementById('pe_resultStatus').innerText='Edit endpoint not available, trying generate with reference image...';
-      let genBody={model:'lustify-sdxl',prompt:finalPrompt,negative_prompt:'blurry, deformed, cartoon, low quality',width:mc.width,height:mc.height,steps:35,cfg_scale:8,safe_mode:false,hide_watermark:true,image:imageBase64,strength:body.strength};
-      res=await fetch('https://api.venice.ai/api/v1/image/generate',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(genBody)});
-      txt=await res.text(); try{ j=JSON.parse(txt); }catch(e){ j={raw:txt}; }
-    }
-    if(!res.ok){ document.getElementById('pe_resultStatus').innerText='❌ Venice error '+res.status+': '+txt.slice(0,300); return; }
-    let imgUrl=null;
-    if(j.images && j.images.length){ let first=j.images[0]; if(typeof first==='string'){ if(first.startsWith('http')||first.startsWith('data:')) imgUrl=first; else imgUrl='data:image/png;base64,'+first; } else if(first.url) imgUrl=first.url; else if(first.b64) imgUrl='data:image/png;base64,'+first.b64; else if(first.b64_json) imgUrl='data:image/png;base64,'+first.b64_json; }
-    if(!imgUrl && j.data && j.data.length){ let first=j.data[0]; if(typeof first==='string'){ if(first.startsWith('http')||first.startsWith('data:')) imgUrl=first; else imgUrl='data:image/png;base64,'+first; } else if(first.url) imgUrl=first.url; }
-    if(!imgUrl && j.b64_json) imgUrl='data:image/png;base64,'+j.b64_json;
-    if(imgUrl){
-      let rc=document.getElementById('pe_resultCanvas'); let img=new Image(); img.onload=()=>{ rc.width=img.width; rc.height=img.height; rc.getContext('2d').drawImage(img,0,0); rc.style.display='block'; document.getElementById('pe_download').href=imgUrl; document.getElementById('pe_download').style.display='block'; document.getElementById('pe_continue').style.display='block'; document.getElementById('pe_resultStatus').innerText='✅ Venice edited ONLY '+part+': '+prompt+'. Face/outfit outside mask preserved.'; pe_lastResult=imgUrl; }; img.src=imgUrl;
-    } else { document.getElementById('pe_resultStatus').innerText='❌ No image returned: '+txt.slice(0,400); }
-  }catch(e){ document.getElementById('pe_resultStatus').innerText='❌ Error: '+e.message; }
+function setStatus(node, msg, isErr) {
+  node.textContent = msg || "";
+  node.classList.toggle("err", !!isErr);
 }
 
-function pe_continueEdit(){ if(!pe_lastResult) return; let img=new Image(); img.onload=()=>{ let bc=document.getElementById('pe_baseCanvas'); let mc=document.getElementById('pe_maskCanvas'); bc.width=img.width; bc.height=img.height; mc.width=img.width; mc.height=img.height; let bctx=bc.getContext('2d'); bctx.clearRect(0,0,img.width,img.height); bctx.drawImage(img,0,0,img.width,img.height); let mctx=mc.getContext('2d'); mctx.clearRect(0,0,img.width,img.height); pe_bCtx=bctx; pe_mCtx=mctx; pe_baseImg=img; pe_originalData=bctx.getImageData(0,0,img.width,img.height); document.getElementById('pe_resultStatus').innerText='🔄 Loaded result back - auto-detect next body part'; }; img.src=pe_lastResult; }
+function setConn(text, kind) {
+  $("connText").textContent = text;
+  const p = $("connPill");
+  p.className = "pill" + (kind ? " " + kind : "");
+}
 
-setTimeout(pe_initCanvas, 800);
+/* ------------------------------------------------------------------ *
+ *  Tabs
+ * ------------------------------------------------------------------ */
+document.querySelectorAll(".tab").forEach((t) => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
+    ["lora","custom","settings"].forEach((k) => $("tab-" + k).classList.toggle("hidden", k !== t.dataset.tab));
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ *  Populate LoRA select + prompt chips + space presets
+ * ------------------------------------------------------------------ */
+const loraSel = $("lora");
+LORAS.forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; loraSel.appendChild(o); });
+loraSel.value = "Photo-to-Anime";
+
+const chipBox = $("promptChips");
+PROMPT_PRESETS.forEach((p) => {
+  const c = el("span", "chip", p.prompt.length > 42 ? p.prompt.slice(0, 40) + "…" : p.prompt);
+  c.title = p.prompt;
+  c.addEventListener("click", () => {
+    $("prompt").value = p.prompt;
+    if (LORAS.includes(p.lora)) loraSel.value = p.lora;
+  });
+  chipBox.appendChild(c);
+});
+
+const presetBox = $("spacePresets");
+SPACE_PRESETS.forEach((id) => {
+  const c = el("span", "chip", id.split("/")[1] || id);
+  c.title = id;
+  c.addEventListener("click", () => { $("customSpace").value = id; });
+  presetBox.appendChild(c);
+});
+
+/* ------------------------------------------------------------------ *
+ *  Image intake: file picker, drag & drop, clipboard paste
+ * ------------------------------------------------------------------ */
+const fileInput = $("fileInput");
+const drop = $("drop");
+
+drop.addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", () => { addFiles([...fileInput.files]); fileInput.value = ""; });
+
+["dragenter","dragover"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); })
+);
+["dragleave","dragend"].forEach((ev) =>
+  drop.addEventListener(ev, () => drop.classList.remove("over"))
+);
+drop.addEventListener("drop", (e) => {
+  e.preventDefault(); drop.classList.remove("over");
+  addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/")));
+});
+
+// Paste anywhere in the page
+document.addEventListener("paste", (e) => {
+  const items = [...(e.clipboardData?.items || [])];
+  const files = items.filter((i) => i.type.startsWith("image/")).map((i) => i.getAsFile()).filter(Boolean);
+  if (files.length) { e.preventDefault(); addFiles(files); }
+});
+// Paste when the paste zone is focused (explicit affordance from the HF UI)
+$("pasteZone").addEventListener("paste", (e) => {
+  const files = [...(e.clipboardData?.items || [])]
+    .filter((i) => i.type.startsWith("image/"))
+    .map((i) => i.getAsFile()).filter(Boolean);
+  if (files.length) { e.preventDefault(); addFiles(files); }
+});
+
+function addFiles(files) {
+  let pending = files.length;
+  if (!pending) return;
+  files.forEach((f) => {
+    const r = new FileReader();
+    r.onload = () => {
+      S.images.push({ id: S.imgSeq++, name: f.name || `pasted-${S.imgSeq}.png`, dataUrl: r.result });
+      renderThumbs();
+      if (--pending === 0) setStatus($("status"), `${S.images.length} image(s) ready.`);
+    };
+    r.onerror = () => { if (--pending === 0) renderThumbs(); };
+    r.readAsDataURL(f);
+  });
+}
+
+function renderThumbs() {
+  const box = $("thumbs");
+  box.innerHTML = "";
+  S.images.forEach((im, i) => {
+    const t = el("div", "thumb");
+    const img = el("img"); img.src = im.dataUrl; img.alt = im.name;
+    const rm = el("button", null, "×");
+    rm.title = "Remove";
+    rm.addEventListener("click", () => { S.images = S.images.filter((x) => x.id !== im.id); renderThumbs(); });
+    const idx = el("span", "idx", "img" + (i + 1));
+    t.append(img, rm, idx);
+    box.appendChild(t);
+  });
+  if (S.images.length > 1) {
+    const hint = el("div", "hint", "Order matters: “image 1”, “image 2” in your prompt refer to these.");
+    hint.style.width = "100%";
+    box.appendChild(hint);
+  }
+}
+
+$("clearAll").addEventListener("click", () => { S.images = []; renderThumbs(); setStatus($("status"), ""); });
+
+/* ------------------------------------------------------------------ *
+ *  Connection
+ * ------------------------------------------------------------------ */
+function statusCallback(label) {
+  return (st) => {
+    // Defensive: the callback shape has changed across client versions.
+    let stage = "";
+    try {
+      stage = st?.status?.stage || st?.stage || "";
+    } catch (_) { stage = ""; }
+    if (stage) setStatus($(label), `Space status: ${stage}…`);
+  };
+}
+
+async function connectLora(spaceId, token) {
+  setConn("Connecting…", "busy");
+  setStatus($("status"), `Connecting to ${spaceId}… (a sleeping Space can take ~30–60 s to start)`);
+  try {
+    const opts = { status_callback: statusCallback("status") };
+    if (token && token.startsWith("hf_")) opts.token = token;
+    S.loraClient = await Client.connect(spaceId, opts);
+    S.loraSpaceId = spaceId;
+    setConn("Connected: " + spaceId.split("/")[1], "ok");
+    setStatus($("status"), "Connected. Ready to edit.");
+    return true;
+  } catch (e) {
+    S.loraClient = null;
+    setConn("Connection failed", "err");
+    setStatus($("status"),
+      "Could not connect: " + (e?.message || e) +
+      "\n\nIf this is a network/CORS block in a sandboxed preview, download this file and open it directly in your browser.", true);
+    return false;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Main generate flow (exact schema of the LoRAs-Fast Space)
+ * ------------------------------------------------------------------ */
+function payloadFor() {
+  const prompt = $("prompt").value.trim();
+  return {
+    images_b64_json: JSON.stringify(S.images.map((i) => i.dataUrl)),
+    prompt,
+    lora_adapter: loraSel.value,
+    seed: Math.max(0, parseInt($("seed").value, 10) || 0),
+    randomize_seed: $("randomize").checked,
+    guidance_scale: parseFloat($("guidance").value) || 4,
+    steps: Math.max(1, parseInt($("steps").value, 10) || 4)
+  };
+}
+
+$("generate").addEventListener("click", async () => {
+  if (S.busy) return;
+  if (!S.images.length) { setStatus($("status"), "Add at least one image first (drop, upload, or paste).", true); return; }
+  const payload = payloadFor();
+  if (!payload.prompt) { setStatus($("status"), "Write a prompt describing the edit.", true); return; }
+
+  if (!S.loraClient) {
+    const ok = await connectLora(S.loraSpaceId, S.token);
+    if (!ok) return;
+  }
+
+  S.busy = true;
+  $("generate").disabled = true;
+  setConn("Generating…", "busy");
+  setStatus($("status"), "Queued — waiting for the Space…");
+  const t0 = Date.now();
+
+  try {
+    // Optional pre-flight safety check (pure CPU on the Space, no GPU queue)
+    if ($("checkSafety").dataset.auto === "1") await safetyCheck(payload.prompt, false);
+
+    const job = S.loraClient.submit("/edit_image", payload);
+    let out = null;
+    for await (const m of job) {
+      if (m.type === "status") {
+        const pos = m.position != null ? `queue position ${m.position}` : "queued";
+        const eta = m.eta != null ? ` · ETA ${Math.round(m.eta)}s` : "";
+        setStatus($("status"), `Running — ${pos}${eta}`);
+      } else if (m.type === "data") {
+        out = m.data;
+      }
+    }
+
+    const data = Array.isArray(out) ? out[0] : out;
+    if (!data) throw new Error("No response payload from the Space.");
+    if (data.status === "blocked") {
+      setStatus($("status"), data.message || "Prompt blocked by the content filter.", true);
+      return;
+    }
+    if (!data.image) throw new Error(data.message || "The Space returned no image.");
+
+    showResult(data.image, payload, Date.now() - t0);
+    setStatus($("status"), "Done.");
+  } catch (e) {
+    setStatus($("status"),
+      "Generation failed: " + (e?.message || e) +
+      "\n\nTip: the Space may have been restarted or is rate-limiting anonymous traffic. Retry, or add a Hugging Face token in Settings.", true);
+  } finally {
+    S.busy = false;
+    $("generate").disabled = false;
+    setConn("Connected: " + S.loraSpaceId.split("/")[1], "ok");
+  }
+});
+
+async function safetyCheck(prompt, loud = true) {
+  if (!S.loraClient) { if (loud) setStatus($("status"), "Not connected yet.", true); return null; }
+  try {
+    const res = await S.loraClient.predict("/check_safety", { prompt });
+    const d = Array.isArray(res.data) ? res.data[0] : res.data;
+    if (loud) setStatus($("status"), d?.status === "blocked" ? ("⛔ " + d.message) : "✅ Prompt passed the content filter.", d?.status === "blocked");
+    return d;
+  } catch (e) {
+    if (loud) setStatus($("status"), "Safety check unavailable: " + (e?.message || e), true);
+    return null;
+  }
+}
+
+$("checkSafety").addEventListener("click", () => safetyCheck($("prompt").value.trim(), true));
+// Enable the automatic pre-flight check after the user has used it once
+$("checkSafety").dataset.auto = "0";
+
+function showResult(dataUrl, payload, ms) {
+  const out = $("out");
+  out.innerHTML = "";
+  const img = el("img"); img.src = dataUrl; img.alt = "edited result";
+  out.appendChild(img);
+  S.lastResult = dataUrl;
+
+  $("metaSeed").textContent = payload.randomize_seed ? "(randomized)" : String(payload.seed);
+  $("metaLora").textContent = payload.lora_adapter;
+  $("metaTime").textContent = (ms / 1000).toFixed(1) + "s";
+
+  S.history.unshift({ dataUrl, prompt: payload.prompt, lora: payload.lora_adapter });
+  if (S.history.length > 24) S.history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const box = $("hist");
+  box.innerHTML = "";
+  if (!S.history.length) { box.appendChild(el("span", "hint", "No results yet.")); return; }
+  S.history.forEach((h) => {
+    const img = el("img"); img.src = h.dataUrl; img.title = h.lora + " · " + h.prompt;
+    img.addEventListener("click", () => {
+      $("out").innerHTML = ""; const big = el("img"); big.src = h.dataUrl; $("out").appendChild(big);
+      S.lastResult = h.dataUrl; $("metaLora").textContent = h.lora;
+    });
+    box.appendChild(img);
+  });
+}
+
+$("useAsInput").addEventListener("click", () => {
+  if (!S.lastResult) return;
+  S.images.push({ id: S.imgSeq++, name: "result.png", dataUrl: S.lastResult });
+  renderThumbs();
+});
+
+$("saveResult").addEventListener("click", () => {
+  if (!S.lastResult) return;
+  try {
+    const a = document.createElement("a");
+    a.href = S.lastResult;
+    a.download = `qwen-edit-${Date.now()}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    $("saveHint").textContent = "";
+  } catch (e) {
+    $("saveHint").textContent = "Download blocked in this preview — open the page directly in a browser to save.";
+  }
+});
+
+$("steps").addEventListener("input", () => {
+  const v = parseInt($("steps").value, 10) || 0;
+  $("stepBadge").textContent = v <= 8 ? v + "-Step Fast" : v + " steps";
+});
+
+/* ------------------------------------------------------------------ *
+ *  Settings tab
+ * ------------------------------------------------------------------ */
+$("applySettings").addEventListener("click", async () => {
+  S.token = $("token").value.trim();
+  const sid = $("spaceId").value.trim();
+  if (!sid) { setStatus($("settingsStatus"), "Enter a Space ID.", true); return; }
+  setStatus($("settingsStatus"), "Applying…");
+  const ok = await connectLora(sid, S.token);
+  setStatus($("settingsStatus"), ok ? "Connected as " + sid : "Failed — see status under the editor.", !ok);
+});
+
+$("disconnect").addEventListener("click", () => {
+  S.loraClient = null;
+  setConn("Not connected");
+  setStatus($("settingsStatus"), "Disconnected.");
+});
+
+/* ------------------------------------------------------------------ *
+ *  Custom Space tab — discover the API and build a form from it
+ * ------------------------------------------------------------------ */
+function typeOf(p) {
+  const t = String(p?.type ?? "");
+  const c = String(p?.component ?? "");
+  if (/boolean/i.test(t) || /checkbox/i.test(c)) return "boolean";
+  if (/number|integer|float/i.test(t) || /slider|number/i.test(c)) return "number";
+  if (/filepath|PIL|Image/i.test(t) || /^image/i.test(c) || /^file/i.test(c)) return "image";
+  return "string";
+}
+
+const IMG_RE = /image|img|mask|photo|reference|init/i;
+
+function buildForm(params) {
+  const host = $("genForm");
+  host.innerHTML = "";
+  params.forEach((p, i) => {
+    if (p.hidden) return;
+    const name = p.parameter_name || ("arg" + i);
+    const isImage = typeOf(p) === "image" || IMG_RE.test(name);
+    const fld = el("div", "fld");
+    const lab = el("label", "field", (p.label || name) + "  ·  " + (p.type || "any"));
+    lab.htmlFor = "cf_" + name;
+    fld.appendChild(lab);
+
+    let input;
+    if (isImage) {
+      input = el("input"); input.type = "file"; input.accept = "image/*";
+      input.multiple = true; input.id = "cf_" + name; input.dataset.kind = "image"; input.dataset.name = name;
+      if (Array.isArray(p.parameter_default)) input.multiple = true;
+    } else if (typeOf(p) === "boolean") {
+      input = el("input"); input.type = "checkbox"; input.id = "cf_" + name;
+      input.dataset.kind = "boolean"; input.dataset.name = name;
+      if (p.parameter_default) input.checked = true;
+      lab.textContent = "";
+      const wrap = el("label", "toggle");
+      wrap.append(input, document.createTextNode(" " + (p.label || name)));
+      fld.appendChild(wrap);
+      host.appendChild(fld);
+      return;
+    } else if (typeOf(p) === "number") {
+      input = el("input"); input.type = "number"; input.step = "any"; input.id = "cf_" + name;
+      input.dataset.kind = "number"; input.dataset.name = name;
+      if (p.parameter_default != null) input.value = p.parameter_default;
+    } else {
+      const long = /prompt|instruction|caption|text/i.test(name);
+      input = long ? document.createElement("textarea") : el("input");
+      if (!long) input.type = "text";
+      input.id = "cf_" + name; input.dataset.kind = "string"; input.dataset.name = name;
+      if (p.parameter_default != null && typeof p.parameter_default === "string") input.value = p.parameter_default;
+    }
+    fld.appendChild(input);
+    host.appendChild(fld);
+  });
+}
+
+async function collectForm() {
+  const inputs = [...$("genForm").querySelectorAll("[data-kind]")];
+  const payload = {};
+  for (const inp of inputs) {
+    const k = inp.dataset.kind, name = inp.dataset.name;
+    if (k === "boolean") payload[name] = inp.checked;
+    else if (k === "number") payload[name] = inp.value === "" ? (inp.parameterDefault ?? 0) : parseFloat(inp.value);
+    else if (k === "image") {
+      const files = [...inp.files];
+      const blobs = [];
+      for (const f of files) blobs.push(await toBlobFile(f));
+      payload[name] = blobs.length > 1 ? blobs : (blobs[0] ?? null);
+    } else payload[name] = inp.value;
+  }
+  return payload;
+}
+
+function toBlobFile(file) {
+  return new Promise((resolve) => {
+    const r = new FileReader();
+    r.onload = async () => {
+      try {
+        const resp = await fetch(r.result);
+        const blob = await resp.blob();
+        resolve(new File([blob], file.name || "image.png", { type: blob.type || "image/png" }));
+      } catch (_) { resolve(file); }
+    };
+    r.onerror = () => resolve(file);
+    r.readAsDataURL(file);
+  });
+}
+
+$("inspectApi").addEventListener("click", async () => {
+  const sid = $("customSpace").value.trim();
+  if (!sid) { setStatus($("customStatus"), "Enter a Space ID.", true); return; }
+  setStatus($("customStatus"), "Connecting…");
+  try {
+    const opts = { status_callback: statusCallback("customStatus") };
+    if (S.token && S.token.startsWith("hf_")) opts.token = S.token;
+    S.customClient = await Client.connect(sid, opts);
+    S.customSpaceId = sid;
+    S.apiInfo = await S.customClient.view_api();
+    $("apiDump").textContent = JSON.stringify(S.apiInfo, null, 2);
+
+    const eps = Object.keys(S.apiInfo.named_endpoints || {});
+    const sel = $("endpoint");
+    sel.innerHTML = "";
+    (eps.length ? eps : ["/predict"]).forEach((e) => {
+      const o = el("option"); o.value = e; o.textContent = e; sel.appendChild(o);
+    });
+    if (eps.length) {
+      sel.value = eps[0];
+      buildForm(S.apiInfo.named_endpoints[eps[0]].parameters || []);
+    }
+    setStatus($("customStatus"), `Connected. ${eps.length || 1} endpoint(s) found.`);
+  } catch (e) {
+    setStatus($("customStatus"), "Failed: " + (e?.message || e), true);
+  }
+});
+
+$("connectCustom").addEventListener("click", () => $("inspectApi").click());
+
+$("endpoint").addEventListener("change", () => {
+  const e = $("endpoint").value;
+  const info = S.apiInfo?.named_endpoints?.[e];
+  if (info) buildForm(info.parameters || []);
+});
+
+$("runCustom").addEventListener("click", async () => {
+  if (!S.customClient || !S.apiInfo) { setStatus($("customRunStatus"), "Connect and inspect a Space first.", true); return; }
+  const ep = $("endpoint").value;
+  setStatus($("customRunStatus"), "Running…");
+  $("customOut").innerHTML = '<div class="ph">Working…</div>';
+  try {
+    const payload = await collectForm();
+    const job = S.customClient.submit(ep, payload);
+    let out = null;
+    for await (const m of job) {
+      if (m.type === "status" && m.position != null) setStatus($("customRunStatus"), "Queue position " + m.position);
+      if (m.type === "data") out = m.data;
+    }
+    renderCustomOut(out);
+    setStatus($("customRunStatus"), "Done.");
+  } catch (e) {
+    setStatus($("customRunStatus"), "Failed: " + (e?.message || e), true);
+    $("customOut").innerHTML = '<div class="ph">Error.</div>';
+  }
+});
+
+function renderCustomOut(out) {
+  const box = $("customOut");
+  box.innerHTML = "";
+  const list = Array.isArray(out) ? out : [out];
+  let shown = false;
+  const walk = (v, depth = 0) => {
+    if (depth > 4 || v == null) return;
+    if (typeof v === "string" && /^(https?:|data:image)/.test(v)) {
+      const img = el("img"); img.src = v; img.alt = "result"; box.appendChild(img); shown = true; return;
+    }
+    if (typeof v === "object") {
+      if (v.url || v.path) return walk(String(v.url || v.path), depth + 1);
+      Object.values(v).forEach((x) => walk(x, depth + 1));
+    }
+  };
+  list.forEach((v) => walk(v));
+  if (!shown) {
+    box.innerHTML = "";
+    const pre = el("pre", "api", JSON.stringify(out, null, 2));
+    pre.style.maxHeight = "420px";
+    box.appendChild(pre);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Boot
+ * ------------------------------------------------------------------ */
+setStatus($("status"), "Not connected yet — hit Generate and it will connect for you.");
 </script>
-
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</body>
 </html>
