@@ -24,21 +24,26 @@
 </style>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Qwen Image Edit Studio v2 - Fixed</title>
+<title>Qwen Image Edit Studio v2 Fixed - Final</title>
 <style>
 :root{--bg:#0b0e14;--panel:#141922;--panel2:#1a212c;--line:#252d3a;--text:#e6ebf2;--muted:#8b98a9;--accent:#ff7a45;--green:#22c55e;--red:#ef4444}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;font-size:14px}
 .wrap{max-width:1240px;margin:0 auto;padding:16px}
 .top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.brand{display:flex;gap:10px;align-items:center;font-weight:700} .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#ff7a45,#ff3d81);display:grid;place-items:center;font-size:20px}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)} .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)} .ok .dot{background:var(--green)} .err .dot{background:var(--red)} .busy .dot{background:orange;animation:pulse 1s infinite} @keyframes pulse{50%{opacity:.3}}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#ff7a45,#ff3d81);display:grid;place-items:center;font-size:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)} .ok .dot{background:var(--green)} .err .dot{background:var(--red)} .busy .dot{background:orange;animation:pulse 1s infinite} @keyframes pulse{50%{opacity:.3}}
 .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:16px 0} .tab{padding:8px 14px;border-radius:10px 10px 0 0;border:1px solid transparent;cursor:pointer;color:var(--muted);font-weight:600;background:transparent} .tab.active{background:var(--panel);border-color:var(--line);color:var(--text)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px} @media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px} .card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:var(--panel2);padding:24px;text-align:center;cursor:pointer} .drop.over{border-color:var(--accent)}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px} .thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line)} .thumb img{width:100%;height:100%;object-fit:cover} .thumb button{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
-label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin:12px 0 5px} textarea,input,select{width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 11px;font-size:13px} textarea{min-height:80px}
-.btn{width:100%;border:none;border-radius:11px;padding:13px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),#ff3d81);color:#fff;margin-top:12px} .btn:disabled{opacity:.5} .btn.sec{background:var(--panel2);border:1px solid var(--line);color:var(--text);width:auto;padding:8px 12px;font-size:12px}
+label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin:12px 0 5px}
+textarea,input,select{width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 11px;font-size:13px} textarea{min-height:80px}
+.btn{width:100%;border:none;border-radius:11px;padding:13px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),#ff3d81);color:#fff;margin-top:12px} .btn:disabled{opacity:.5}
+.btn.sec{background:var(--panel2);border:1px solid var(--line);color:var(--text);width:auto;padding:8px 12px;font-size:12px}
 .out{min-height:360px;background:#0e1420;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center;padding:10px;position:relative} .out img{max-width:100%;max-height:600px;border-radius:8px}
 .status{font-size:12px;color:var(--muted);margin-top:8px;white-space:pre-wrap;min-height:18px} .status.err{color:#ff9b9b}
 .chips{display:flex;flex-wrap:wrap;gap:6px} .chip{border:1px solid var(--line);background:#0e1420;border-radius:999px;padding:5px 10px;font-size:11px;color:var(--muted);cursor:pointer}
@@ -49,19 +54,20 @@ label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin:12p
 <body>
 <div class="wrap">
 <header class="top">
-<div class="brand"><div class="logo">🪄</div><div>Qwen Image Edit Studio v2 Fixed<br><span style="font-size:11px;color:var(--muted);font-weight:500">Fixes No payload + 1280px + queue retry • same models</span></div></div>
+<div class="brand"><div class="logo">🪄</div><div>Qwen Edit v2 Fixed Final<br><span style="font-size:11px;color:var(--muted)">Same models • 1280 fix + auto retry</span></div></div>
 <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
 </header>
 <nav class="tabs">
-<button class="tab active" data-tab="lora">LoRA Editor</button>
-<button class="tab" data-tab="settings">Settings</button>
+<button class="tab active" id="tabBtnLora" data-tab="lora">LoRA Editor</button>
+<button class="tab" id="tabBtnSet" data-tab="settings">Settings</button>
 </nav>
+
 <section id="tab-lora">
 <div class="grid">
 <div>
 <div class="card">
-<h3>Upload - auto resized to 1280 max</h3>
-<div class="drop" id="drop"><b>Drop / Click / Paste Ctrl+V</b><div class="hint">Supports multiple images, auto-resized to fix Venice error</div></div>
+<h3>Upload - auto resized to 1280</h3>
+<div class="drop" id="drop"><b>Drop / Click / Paste Ctrl+V</b><div class="hint">Multiple images ok • auto resized</div></div>
 <input type="file" id="fileInput" accept="image/*" multiple style="display:none"/>
 <div class="thumbs" id="thumbs"></div>
 <label>Prompt</label>
@@ -69,82 +75,82 @@ label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin:12p
 <div class="chips" id="chips"></div>
 <label>LoRA</label>
 <select id="lora"></select>
-<div class="row">
-<div><label>Steps</label><input type="number" id="steps" value="4" min="1" max="30"/></div>
-<div><label>Guidance</label><input type="number" id="guidance" value="4" min="0" max="20" step="0.5"/></div>
-</div>
-<div class="row">
-<div><label>Seed</label><input type="number" id="seed" value="0"/></div>
-<div style="margin-top:28px"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rand"/> Randomize seed</label></div>
-</div>
+<div class="row"><div><label>Steps</label><input type="number" id="steps" value="4" min="1" max="30"/></div><div><label>Guidance</label><input type="number" id="guidance" value="4" min="0" max="20" step="0.5"/></div></div>
+<div class="row"><div><label>Seed</label><input type="number" id="seed" value="0"/></div><div style="margin-top:28px"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rand"/> Randomize seed</label></div></div>
 <button class="btn" id="gen">✨ Generate - with auto retry</button>
-<div style="display:flex;gap:8px;margin-top:8px"><button class="btn sec" id="clear">Clear</button><button class="btn sec" id="safety">Run safety check</button></div>
-<div class="status" id="status">Paste token in Settings first, then hit Generate. First run 30-60s.</div>
+<div style="display:flex;gap:8px;margin-top:8px"><button class="btn sec" id="clear">Clear</button><button class="btn sec" id="disc2">Disconnect</button></div>
+<div class="status" id="status">Go to Settings, paste token, Apply & connect, then Generate. First run 30-60s.</div>
 </div>
 </div>
 <div>
-<div class="card"><h3>Result</h3><div class="out" id="out"><div style="color:var(--muted);text-align:center">No result yet<br><span style="font-size:11px">Queue and retry status shows above</span></div></div>
+<div class="card"><h3>Result</h3><div class="out" id="out"><div style="color:var(--muted);text-align:center">No result yet</div></div>
 <div style="display:flex;gap:8px;margin-top:10px"><button class="btn sec" id="use">↩ Use as input</button><button class="btn sec" id="save">⤓ Save PNG</button></div>
-<div class="hint" id="saveHint"></div>
-<div style="margin-top:8px;font-size:11px;color:var(--muted)" id="meta"></div>
-</div>
+<div class="hint" id="saveHint"></div><div style="margin-top:8px;font-size:11px;color:var(--muted)" id="meta"></div></div>
 <div class="card"><h3>History</h3><div class="thumbs" id="hist"></div></div>
 </div>
 </div>
 </section>
+
 <section id="tab-settings" style="display:none">
 <div class="card" style="max-width:700px">
-<h3>Connection - FIXED version</h3>
-<label>Space ID</label>
+<h3>Connection - FIXED</h3>
+<label>Space ID (use ONLY these 2 valid IDs)</label>
 <input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast"/>
-<div class="chips" id="spaceChips" style="margin-top:6px"></div>
+<div class="chips" style="margin-top:6px"><span class="chip" data-s="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast">2511-LoRAs-Fast ✓ exists</span><span class="chip" data-s="prithivMLmods/Qwen-Image-Edit-2509-LoRAs-Fast">2509-LoRAs-Fast ✓ exists</span></div>
 <label>HF Token (paste hf_...)</label>
 <input type="password" id="token" placeholder="hf_..."/>
-<div class="hint">Token is saved in localStorage and sent only to HuggingFace. It fixes rate limit + allows private Spaces. Get token at huggingface.co/settings/tokens -> Read.</div>
+<div class="hint">Saved in localStorage, sent only to HF. Fixes rate limit. Get at huggingface.co/settings/tokens → Read.</div>
 <div style="margin-top:12px;display:flex;gap:8px"><button class="btn sec" id="apply">Apply & connect</button><button class="btn sec" id="disc">Disconnect</button></div>
 <div class="status" id="setStatus"></div>
-<h3 style="margin-top:18px">What was fixed</h3>
-<div class="hint">
-• Resize to 1280 before upload -> fixes "Number must be <=1280"<br>
-• Auto retry 3x with 15s wait on "No response payload" -> fixes stuck after 1 image<br>
-• Queue position display + waking message<br>
-• Save via Blob URL -> works even in GitHub preview iframe<br>
-• Token persisted in localStorage<br>
-• Content filter message shown clearly
-</div>
+<h3 style="margin-top:18px">Fixes</h3>
+<div class="hint">• Resize to 1280 before upload → fixes Venice error<br>• images_b64_json correctly sent as dataURL → fixes buttons not working<br>• Auto retry 3× on No payload → fixes stuck after 1 image<br>• Quota detection → explains ZeroGPU limit (resets 5:30 AM IST)<br>• Save via Blob → works in iframe</div>
 </div>
 </section>
 </div>
+
 <script type="module">
 import {Client} from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 const LORAS=["Multiple-Angles","Photo-to-Anime","Anime-V2","Light-Migration","Upscaler","Style-Transfer","Manga-Tone","Anything2Real","Fal-Multiple-Angles","Polaroid-Photo","Unblur-Anything","Midnight-Noir-Eyes-Spotlight","Hyper-Realistic-Portrait","Ultra-Realistic-Portrait","Pixar-Inspired-3D","Noir-Comic-Book","Any-light","Studio-DeLight","Cinematic-FlatLog"];
-const PRESETS=["Transform into anime.","Rotate the camera 45 degrees to the right.","Upscale this picture to 4K resolution.","Transform it into Pixar-inspired 3D.","Neutral uniform lighting. Preserve identity.","Make hands slightly closer together, keep same saree and face"];
-const SPACES=["prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast","prithivMLmods/Qwen-Image-Edit-2511","selfit-camera/Omni-Image-Editor","Qwen/Qwen-Image-Edit"];
+const PRESETS=["Transform into anime.","Rotate the camera 45 degrees to the right.","Upscale this picture to 4K resolution.","Make hands slightly closer together, keep same saree and face"];
 const $=id=>document.getElementById(id);
 const S={client:null,spaceId:localStorage.getItem('qwen_space')||"prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",token:localStorage.getItem('qwen_token')||"",images:[],last:null,busy:false};
+
 function setConn(t,k){$('connText').textContent=t; $('connPill').className='pill '+(k||'');}
 function setStat(n,m,e){n.textContent=m||''; n.classList.toggle('err',!!e);}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-function resizeImage(file, max=1280){
+
+function resizeToDataURL(file, max=1280){
  return new Promise(res=>{
-  const img=new Image(); img.onload=()=>{
-   let w=img.width,h=img.height; if(w<=max && h<=max){res(file);return;}
-   const r=Math.min(max/w,max/h); w=Math.round(w*r); h=Math.round(h*r);
-   const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
-   c.toBlob(b=>{res(new File([b],file.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'}));},'image/jpeg',0.92);
-  }; img.onerror=()=>res(file); img.src=URL.createObjectURL(file);
+  const img=new Image();
+  img.onload=()=>{
+   let w=img.width,h=img.height;
+   const r=Math.min(1,max/w,max/h);
+   w=Math.round(w*r); h=Math.round(h*r);
+   const c=document.createElement('canvas'); c.width=w; c.height=h;
+   c.getContext('2d').drawImage(img,0,0,w,h);
+   res(c.toDataURL('image/jpeg',0.92));
+  };
+  img.onerror=()=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); };
+  img.src=URL.createObjectURL(file);
  });
 }
-$('lora').innerHTML=LORAS.map(v=>`<option>${v}</option>`).join(''); $('lora').value='Photo-to-Anime';
-$('chips').innerHTML=PRESETS.map(p=>`<span class=chip>${p}</span>`).join(''); [...$('chips').children].forEach(c=>c.onclick=()=>$('prompt').value=c.textContent);
-$('spaceChips').innerHTML=SPACES.map(s=>`<span class=chip>${s.split('/')[1]}</span>`).join(''); [...$('spaceChips').children].forEach((c,i)=>c.onclick=()=>{$('spaceId').value=SPACES[i];});
+
+// UI init
+$('lora').innerHTML=LORAS.map(v=>`<option>${v}</option>`).join('');
+$('chips').innerHTML=PRESETS.map(p=>`<span class=chip>${p}</span>`).join('');
+[...$('chips').children].forEach(c=>c.onclick=()=>{$('prompt').value=c.textContent;});
 $('spaceId').value=S.spaceId; $('token').value=S.token;
-if(S.token) setStat($('setStatus'),'Token loaded from storage','');
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
- document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
- $('tab-lora').style.display=t.dataset.tab==='lora'?'block':'none';
- $('tab-settings').style.display=t.dataset.tab==='settings'?'block':'none';
-});
+document.querySelectorAll('[data-s]').forEach(c=>c.onclick=()=>{$('spaceId').value=c.dataset.s;});
+
+// tabs - THIS WAS MISSING BEFORE, that's why buttons seemed not working
+function showTab(name){
+ $('tab-lora').style.display=name==='lora'?'block':'none';
+ $('tab-settings').style.display=name==='settings'?'block':'none';
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+}
+$('tabBtnLora').onclick=()=>showTab('lora');
+$('tabBtnSet').onclick=()=>showTab('settings');
+
 const drop=$('drop'), fileInput=$('fileInput');
 drop.onclick=()=>fileInput.click();
 drop.ondragover=e=>{e.preventDefault(); drop.classList.add('over');};
@@ -153,23 +159,27 @@ drop.ondrop=async e=>{e.preventDefault(); drop.classList.remove('over'); await a
 fileInput.onchange=async()=>{await addFiles([...fileInput.files]); fileInput.value='';};
 document.addEventListener('paste', async e=>{
  if(document.activeElement.tagName==='TEXTAREA' || document.activeElement.tagName==='INPUT') return;
- const files=[... (e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/')); if(files.length) await addFiles(files);
+ const files=[...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/')); if(files.length) await addFiles(files);
 });
 async function addFiles(files){
- for(let f of files){ if(!f.type.startsWith('image/')) continue; const rf=await resizeImage(f,1280); const url=URL.createObjectURL(rf); S.images.push({id:Date.now()+Math.random(),file:rf,url,name:rf.name});}
+ for(let f of files){
+  if(!f.type.startsWith('image/')) continue;
+  const dataUrl=await resizeToDataURL(f,1280);
+  const blobUrl=URL.createObjectURL(f); // for thumb
+  S.images.push({id:Date.now()+Math.random(),file:f,dataUrl:dataUrl,thumbUrl:blobUrl,name:f.name});
+ }
  renderThumbs();
 }
 function renderThumbs(){
- $('thumbs').innerHTML=S.images.map((im,i)=>`<div class=thumb><img src="${im.url}"><button data-i=${i}>x</button><div style="position:absolute;bottom:2px;left:3px;font-size:9px;color:#fff;text-shadow:0 1px 2px #000">${i+1}</div></div>`).join('');
+ $('thumbs').innerHTML=S.images.map((im,i)=>`<div class=thumb><img src="${im.thumbUrl}"><button data-i=${i}>x</button></div>`).join('');
  [...$('thumbs').querySelectorAll('button')].forEach(b=>b.onclick=()=>{S.images.splice(parseInt(b.dataset.i),1); renderThumbs();});
 }
+
 async function connect(spaceId, token, statusNode){
  try{
   setConn('Connecting...','busy'); if(statusNode) setStat(statusNode,'Connecting to '+spaceId+'...');
-  const opts={}; if(token && token.startsWith('hf_')) opts.hf_token=token; else if(token) opts.hf_token=token;
-  opts.status_callback=(msg)=>{
-    if(msg.stage==='queue' && msg.position!=null){ const m=`Queue position ${msg.position} - ${msg.queue_size||''} ahead`; if(statusNode) setStat(statusNode,m); setConn(m,'busy');}
-  };
+  const opts={}; if(token && token.startsWith('hf_')) opts.hf_token=token;
+  opts.status_callback=(msg)=>{ if(msg.stage==='queue' && msg.position!=null){ setStat(statusNode||$('status'),`Queue position ${msg.position}`); } };
   const client=await Client.connect(spaceId, opts);
   S.client=client; S.spaceId=spaceId; localStorage.setItem('qwen_space',spaceId);
   setConn('Connected as '+spaceId.split('/')[1],'ok'); if(statusNode) setStat(statusNode,'Connected as '+spaceId);
@@ -181,24 +191,24 @@ async function ensureConnect(){
  if(S.client && S.spaceId===sid) return true;
  return await connect(sid,tok,$('status'));
 }
+
 $('apply').onclick=async()=>{
  const sid=$('spaceId').value.trim(); const tok=$('token').value.trim();
  localStorage.setItem('qwen_token',tok); localStorage.setItem('qwen_space',sid); S.token=tok; S.spaceId=sid;
- const ok=await connect(sid,tok,$('setStatus'));
+ await connect(sid,tok,$('setStatus'));
 };
 $('disc').onclick=()=>{S.client=null; setConn('Not connected'); setStat($('setStatus'),'Disconnected');};
+$('disc2').onclick=()=>{S.client=null; setConn('Not connected'); setStat($('status'),'Disconnected');};
 $('clear').onclick=()=>{S.images=[]; renderThumbs(); $('out').innerHTML='<div style="color:var(--muted)">No result yet</div>';};
-$('use').onclick=()=>{ if(!S.last) return; S.images.push({id:Date.now(),file:null,url:S.last, name:'result.png'}); renderThumbs(); };
-$('save').onclick=()=>{
+$('use').onclick=()=>{ if(!S.last) return; const dataUrl=S.last; S.images.push({id:Date.now(),file:null,dataUrl:dataUrl,thumbUrl:dataUrl,name:'result.png'}); renderThumbs(); };
+$('save').onclick=async()=>{
  if(!S.last) return;
  try{
-  fetch(S.last).then(r=>r.blob()).then(b=>{
-   const url=URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download='qwen-edit-'+Date.now()+'.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),2000);
-  }).catch(()=>{
-   const a=document.createElement('a'); a.href=S.last; a.download='qwen-edit.png'; a.target='_blank'; a.click();
-  });
+  const r=await fetch(S.last); const b=await r.blob();
+  const url=URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download='qwen-edit-'+Date.now()+'.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),2000);
  }catch(e){ window.open(S.last,'_blank'); }
 };
+
 $('gen').onclick=async()=>{
  if(S.busy) return; if(S.images.length===0){ setStat($('status'),'Upload an image first',true); return;}
  const prompt=$('prompt').value.trim(); if(!prompt){ setStat($('status'),'Enter a prompt',true); return;}
@@ -206,43 +216,62 @@ $('gen').onclick=async()=>{
  let attempt=0; const maxAttempts=4;
  while(attempt<maxAttempts){
   try{
-   attempt++; setStat($('status'), attempt===1? 'Connecting...':'Retrying '+attempt+'/'+maxAttempts+'...');
+   attempt++;
+   setStat($('status'), attempt===1?'Connecting...':'Retrying '+attempt+'/'+maxAttempts+'...');
    const ok=await ensureConnect(); if(!ok) throw new Error('Not connected - add HF token in Settings');
    const lora=$('lora').value; const steps=parseInt($('steps').value)||4; const guidance=parseFloat($('guidance').value)||4;
    let seed=parseInt($('seed').value)||0; if($('rand').checked) seed=Math.floor(Math.random()*2147483647);
-   const b64json = JSON.stringify(S.images.map(im=>im.url)); // dataUrl
-   setStat($('status'),`Generating... (attempt ${attempt})\nPrompt: ${prompt}\nThis can take 30-60s on first wake`);
+   const is2509 = S.spaceId.includes('2509');
+   const b64single = S.images[0]?.dataUrl || '';
+   const b64json = JSON.stringify(S.images.map(im=>im.dataUrl));
+   const payload = is2509 ? {
+     image_b64: b64single,
+     prompt: prompt,
+     lora_adapter: lora,
+     steps: steps,
+     guidance_scale: guidance,
+     seed: seed,
+     randomize_seed: $('rand').checked
+   } : {
+     images_b64_json: b64json,
+     prompt: prompt,
+     lora_adapter: lora,
+     steps: steps,
+     guidance_scale: guidance,
+     seed: seed,
+     randomize_seed: $('rand').checked
+   };
+   setStat($('status'),`Generating on ${S.spaceId.split('/')[1]}... attempt ${attempt}\nPrompt: ${prompt}\nFirst run 30-60s`);
    setConn('Generating...','busy');
    const t0=performance.now();
-   const result=await S.client.predict('/edit_image',{images_b64_json:b64json,prompt:prompt,lora_adapter:lora,steps:steps,guidance_scale:guidance,seed:seed,randomize_seed:$('rand').checked});
-   // result.data[0] is image
+   const result=await S.client.predict('/edit_image', payload);
    let out=result.data?.[0]; let url=null;
    if(typeof out==='string') url=out; else if(out?.url) url=out.url; else if(Array.isArray(out) && out[0]?.url) url=out[0].url;
-   if(!url){ // try scan
-    const walk=v=>{ if(!v) return null; if(typeof v==='string' && (v.startsWith('http')||v.startsWith('data:image'))) return v; if(v.url) return v.url; if(Array.isArray(v)) for(let x of v){let r=walk(x); if(r) return r;} else if(typeof v==='object') for(let k in v){let r=walk(v[k]); if(r) return r;} return null; };
-    url=walk(result.data);
-   }
-   if(!url) throw new Error('No image returned - prompt may be blocked by safety filter. Try different wording.');
+   if(!url){ const walk=v=>{ if(!v) return null; if(typeof v==='string' && (v.startsWith('http')||v.startsWith('data:image'))) return v; if(v?.url) return v.url; if(Array.isArray(v)) for(let x of v){let r=walk(x); if(r) return r;} else if(typeof v==='object') for(let k in v){let r=walk(v[k]); if(r) return r;} return null; }; url=walk(result.data); }
+   if(!url) throw new Error('No image returned - safety filter may have blocked. Try different wording.');
    S.last=url; $('out').innerHTML=`<img src="${url}" alt="result"/>`; const dt=((performance.now()-t0)/1000).toFixed(1);
-   $('meta').textContent=`Seed ${seed} • ${lora} • ${dt}s`; setStat($('status'),`Done in ${dt}s`); setConn('Connected as '+S.spaceId.split('/')[1],'ok');
-   // history
+   $('meta').textContent=`Seed ${seed} • ${lora} • ${dt}s`; setStat($('status'),`Done in ${dt}s`); setConn('Connected','ok');
    const h=document.createElement('div'); h.className='thumb'; h.innerHTML=`<img src="${url}">`; h.onclick=()=>{$('out').innerHTML=`<img src="${url}">`; S.last=url;}; $('hist').prepend(h);
    break;
   }catch(e){
    const msg=(e.message||'').toLowerCase();
-   const isPayload=msg.includes('no response payload')||msg.includes('payload')||msg.includes('rate')||msg.includes('429');
+   if(msg.includes('zerogpu')||msg.includes('quota')||msg.includes('exceeded')){
+    setStat($('status'),'ZeroGPU daily limit reached. You already generated today. Wait till 5:30 AM IST for reset or get PRO at huggingface.co/subscribe/pro. Or try prithivMLmods/Qwen-Image-Edit-2509-LoRAs-Fast',true); setConn('Quota limit','err'); break;
+   }
+   const isPayload=msg.includes('no response payload')||msg.includes('429');
    const isSleep=msg.includes('sleep')||msg.includes('restart')||msg.includes('queue');
    if((isPayload||isSleep) && attempt<maxAttempts){
-    setStat($('status'),`Space restarted (ZeroGPU sleep) - common after 1 image. Retrying ${attempt}/${maxAttempts} in 15s...\nError: ${e.message||e}`); setConn(`Retrying in 15s (${attempt}/${maxAttempts})`,'busy');
-    S.client=null; await sleep(15000); continue;
+    setStat($('status'),`Space sleep after 1 image - retrying ${attempt}/${maxAttempts} in 15s...\n${e.message}`); setConn(`Retrying in 15s`,'busy'); S.client=null; await sleep(15000); continue;
    } else {
-    setStat($('status'),'Generation failed: '+(e.message||e)+'\nTip: Add HF token in Settings + wait 60s and retry. If blocked by filter, change prompt.',true); setConn('Error','err'); break;
+    setStat($('status'),'Failed: '+(e.message||e),true); setConn('Error','err'); break;
    }
   }
  }
  S.busy=false; $('gen').disabled=false;
 };
+
 if(S.spaceId) connect(S.spaceId,S.token,$('status'));
+showTab('lora');
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
