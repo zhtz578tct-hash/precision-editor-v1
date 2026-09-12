@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Qwen Image Edit Studio — complete single-file app.
-  Deploy: save this whole file as index.html at your repo root, commit, push.
-          GitHub → Settings → Pages → Deploy from branch → main / (root).
-  Requires no build step and no API key.
--->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -14,7 +8,7 @@
   :root{
     --bg:#0b0e14; --panel:#141922; --panel-2:#1a212c; --line:#252d3a;
     --text:#e6ebf2; --muted:#8b98a9; --accent:#ff7a45; --accent-2:#ffb020;
-    --green:#22c55e; --red:#ef4444;
+    --green:#22c55e; --red:#ef4444; --blue:#5b8def;
     --radius:14px;
   }
   *{box-sizing:border-box}
@@ -45,7 +39,7 @@
   .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
   .badge{display:inline-block;padding:2px 8px;border-radius:6px;background:#1f3a2a;color:#6ee7a0;font-size:11px;font-weight:700;margin-left:8px;vertical-align:middle}
   .note{background:#2a1a12;border:1px solid #4a2a18;border-radius:10px;padding:10px 12px;font-size:12px;color:#f0c9a8;margin-bottom:12px}
-  .note.blue{background:#14202e;border-color:#24384f;color:#bcd6f5}
+  .note b{color:#ffb020}
   .drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:var(--panel-2);
     padding:26px 16px;text-align:center;cursor:pointer;transition:.15s;position:relative}
   .drop:hover,.drop.over{border-color:var(--accent);background:#1c2330}
@@ -83,25 +77,21 @@
   .hist{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
   .hist img{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
   .hist img:hover{border-color:var(--accent)}
-  .varGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-  .varGrid .v{border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;background:#0e1420}
-  .varGrid .v img{width:100%;height:96px;object-fit:cover;display:block}
-  .varGrid .v.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,122,69,.3)}
   .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px;white-space:pre-wrap}
   .status.err{color:#ff9b9b}
   .hidden{display:none!important}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
   pre.api{background:#0e1420;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;
     max-height:280px;font-size:11.5px;color:#9fb3cc}
+  .safety{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .safety.blocked{color:#ff9b9b;font-weight:600}
+  .flex-end{display:flex;justify-content:flex-end}
   .split{display:flex;gap:8px}
   .split>*{flex:1}
   .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
   .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
   .toggle input{width:16px;height:16px;accent-color:var(--accent)}
   .gen-form .fld{margin-bottom:10px}
-  .engbox{border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:11px 12px}
-  .engbox .t{font-weight:700;font-size:13px}
-  .engbox .d{font-size:11.5px;color:var(--muted);margin-top:3px}
 </style>
 </head>
 <body>
@@ -112,7 +102,7 @@
       <div class="logo">🪄</div>
       <div>
         <div>Qwen Image Edit Studio</div>
-        <div style="font-size:11.5px;color:var(--muted);font-weight:500">Personal prompt-driven photo editor · powered by Hugging Face Spaces</div>
+        <div style="font-size:11.5px;color:var(--muted);font-weight:500">Your personal prompt-driven image editor · powered by Hugging Face Spaces</div>
       </div>
     </div>
     <div class="inline">
@@ -121,35 +111,27 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="editor">Editor</button>
+    <button class="tab active" data-tab="lora">LoRA Editor</button>
     <button class="tab" data-tab="custom">Custom Space</button>
     <button class="tab" data-tab="settings">Settings</button>
   </nav>
 
-  <!-- ============ EDITOR ============ -->
-  <section id="tab-editor">
+  <!-- ============ TAB 1: LoRA Editor ============ -->
+  <section id="tab-lora">
     <div class="grid">
+      <!-- LEFT: inputs -->
       <div>
         <div class="card">
-          <h3>Engine</h3>
-          <select id="engine"></select>
-          <div class="engbox" style="margin-top:10px">
-            <div class="t" id="engTitle">—</div>
-            <div class="d" id="engDesc">—</div>
-          </div>
-          <div class="note blue" style="margin-top:12px">
-            <b>Rule of thumb:</b> for real photos of people, use <b>Faithful</b> or <b>Restore</b>.
-            Only use <b>LoRA Studio</b> when you actually want a new look (anime, 3D, comic) —
-            it forces a style LoRA at full strength and will repaint faces.
-          </div>
+          <h3 style="display:flex;align-items:center">Qwen-Image-Edit<span class="badge" id="stepBadge">4-Step Fast</span></h3>
+          <div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">AIO · prompt-driven image editing · 19 LoRA adapters</div>
 
           <div class="note">
             By using this tool you agree to comply with the
             <a href="https://huggingface.co/content-policy" target="_blank" rel="noopener">Hugging&nbsp;Face Content Policy</a>.
-            You are solely responsible for any images generated.
+            You are solely responsible for any images generated. The author assumes no liability for user-generated outputs.
           </div>
 
-          <label class="field">Upload image(s) — drag-n-drop, or paste (Ctrl/⌘+V)</label>
+          <label class="field">Upload image(s) — select several at once, drag-n-drop, or paste (Ctrl/⌘+V)</label>
           <div class="drop" id="drop">
             <div class="big">⬆</div>
             <div><b>Drop files here</b></div>
@@ -158,7 +140,7 @@
           </div>
           <input type="file" id="fileInput" accept="image/*" multiple class="hidden" />
 
-          <label class="field" style="margin-top:14px">📋 Paste image here (Ctrl/⌘+V)</label>
+          <label class="field" style="margin-top:14px">📋 Paste image here (Ctrl+V) — or click the clipboard icon</label>
           <div class="drop" id="pasteZone" tabindex="0">
             <div class="big">📋</div>
             <div><b>Paste from Clipboard</b></div>
@@ -168,26 +150,22 @@
           <div class="thumbs" id="thumbs"></div>
 
           <label class="field" for="prompt">Prompt</label>
-          <textarea id="prompt" placeholder="Describe the edit in plain language…"></textarea>
+          <textarea id="prompt" placeholder="e.g. Transform into anime. / Rotate the camera 45 degrees to the right. / Apply the lighting from image 2 to image 1."></textarea>
           <div class="chips" id="promptChips"></div>
 
-          <div id="loraWrap">
-            <label class="field" for="lora">LoRA adapter</label>
-            <select id="lora"></select>
-            <div class="hint" id="loraDesc"></div>
-          </div>
+          <label class="field" for="lora">LoRA adapter</label>
+          <select id="lora"></select>
 
           <div class="row">
             <div>
               <label class="field" for="steps">Steps</label>
-              <input type="number" id="steps" value="50" min="1" max="60" />
+              <input type="number" id="steps" value="4" min="1" max="50" />
             </div>
             <div>
               <label class="field" for="guidance">Guidance scale</label>
-              <input type="number" id="guidance" value="4" min="1" max="10" step="0.1" />
+              <input type="number" id="guidance" value="4" min="0" max="20" step="0.5" />
             </div>
           </div>
-          <div class="hint" id="paramHint"></div>
 
           <div class="row">
             <div>
@@ -195,31 +173,30 @@
               <input type="number" id="seed" value="0" min="0" />
             </div>
             <div class="toggle" style="margin-top:26px">
-              <input type="checkbox" id="randomize" checked />
-              <label for="randomize" style="margin:0">Randomize seed <span class="hint">(leave on)</span></label>
+              <input type="checkbox" id="randomize" /> <label for="randomize" style="margin:0">Randomize seed</label>
             </div>
           </div>
 
           <button class="btn" id="generate">✨ Generate</button>
           <div class="split" style="margin-top:8px">
-            <button class="btn secondary sm" id="variations" style="width:100%">🎲 3 variations</button>
             <button class="btn secondary sm" id="clearAll" style="width:100%">Clear images</button>
+            <button class="btn secondary sm" id="checkSafety" style="width:100%">Run safety check</button>
           </div>
           <div class="status" id="status"></div>
         </div>
       </div>
 
+      <!-- RIGHT: output -->
       <div>
         <div class="card">
           <h3>Result</h3>
           <div class="out" id="out">
-            <div class="ph">Add a photo, write a prompt, then Generate.<br /><br />
-              First run can take 30–60 s while the Space wakes.</div>
+            <div class="ph">Drop or paste an image, write a prompt, then hit Generate.<br /><br />
+              First run may take 30–60 s while the Space wakes up.</div>
           </div>
           <div style="margin-top:10px">
-            <div class="kv"><span>Engine</span><b id="metaEngine">—</b></div>
             <div class="kv"><span>Seed used</span><b id="metaSeed">—</b></div>
-            <div class="kv"><span>Adapter</span><b id="metaLora">—</b></div>
+            <div class="kv"><span>LoRA</span><b id="metaLora">—</b></div>
             <div class="kv"><span>Time</span><b id="metaTime">—</b></div>
           </div>
           <div class="split" style="margin-top:10px">
@@ -228,12 +205,6 @@
           </div>
           <div class="hint" id="saveHint"></div>
         </div>
-
-        <div class="card hidden" id="varCard">
-          <h3>Variations — tap the best one</h3>
-          <div class="varGrid" id="varGrid"></div>
-        </div>
-
         <div class="card">
           <h3>Session history</h3>
           <div class="hist" id="hist"><span class="hint">No results yet.</span></div>
@@ -242,25 +213,30 @@
     </div>
   </section>
 
-  <!-- ============ CUSTOM SPACE ============ -->
+  <!-- ============ TAB 2: Custom Space ============ -->
   <section id="tab-custom" class="hidden">
     <div class="grid">
       <div>
         <div class="card">
           <h3>Any image-editing Space</h3>
           <div class="hint" style="margin-bottom:10px">
-            Connect to any public Gradio Space — the form is generated from that Space's own API.
+            Connect to any public Gradio-based Space. The form below is generated from that Space's own API,
+            so it adapts to whatever inputs it declares.
           </div>
+
           <label class="field" for="customSpace">Space ID</label>
           <input type="text" id="customSpace" value="selfit-camera/Omni-Image-Editor" />
           <div class="chips" id="spacePresets"></div>
+
           <div class="inline" style="margin-top:12px">
             <button class="btn secondary sm" id="connectCustom">Connect</button>
             <button class="btn secondary sm" id="inspectApi">Inspect API</button>
             <span class="status" id="customStatus" style="margin:0"></span>
           </div>
+
           <label class="field" for="endpoint" style="margin-top:14px">Endpoint</label>
           <select id="endpoint"><option value="">— connect to list endpoints —</option></select>
+
           <div id="genForm" class="gen-form" style="margin-top:12px"></div>
           <button class="btn" id="runCustom">▶ Run</button>
           <div class="status" id="customRunStatus"></div>
@@ -279,52 +255,46 @@
     </div>
   </section>
 
-  <!-- ============ SETTINGS ============ -->
+  <!-- ============ TAB 3: Settings ============ -->
   <section id="tab-settings" class="hidden">
-    <div class="card" style="max-width:760px">
+    <div class="card" style="max-width:720px">
       <h3>Connection</h3>
+      <label class="field" for="spaceId">Default Space (LoRA Editor)</label>
+      <input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast" />
+      <div class="hint">The app calls this Space's <span class="mono">/edit_image</span> endpoint directly from your browser.</div>
+
       <label class="field" for="token">Hugging Face token (optional)</label>
       <input type="password" id="token" placeholder="hf_..." autocomplete="off" />
       <div class="hint">
-        Optional. A read-only token raises your queue priority on ZeroGPU Spaces and unlocks private ones.
-        Held in memory for this session only.
+        Optional. A read token can raise your queue priority and lets you use private Spaces.
+        It is kept in memory for this session only — never stored or sent anywhere except Hugging Face.
       </div>
+
       <div class="inline" style="margin-top:14px">
-        <button class="btn secondary sm" id="applyToken">Apply</button>
+        <button class="btn secondary sm" id="applySettings">Apply &amp; connect</button>
         <button class="btn secondary sm" id="disconnect">Disconnect</button>
       </div>
       <div class="status" id="settingsStatus"></div>
 
-      <h3 style="margin-top:22px">Why results were bad before</h3>
+      <h3 style="margin-top:22px">Notes &amp; limits</h3>
       <div class="hint">
-        • The <b>LoRA Studio</b> engine stacks a full-strength style LoRA (weight 1.0) on a <b>4-step</b> distilled
-        transformer — far too few steps for a LoRA to resolve. That produces repainted faces, neon colour shifts
-        and garbled pseudo-text.<br />
-        • Its own default LoRA is <span class="mono">Photo-to-Anime</span>, so any photo run through it gets stylised by default.<br />
-        • <b>Faithful</b> (official Qwen, 50 steps, no LoRA) and <b>Restore</b> (28 steps, restoration LoRAs) are the
-        right engines for keeping a photo looking like the photo.<br />
-        • Seed is now randomized by default. Before, every run reused seed 0 and produced the identical bad sample.
-      </div>
-
-      <h3 style="margin-top:22px">Notes</h3>
-      <div class="hint">
-        • Free Spaces sleep when idle — first request can take 30–60 s.<br />
-        • Output resolution is derived from your first uploaded image; small inputs give small outputs.<br />
-        • <b>Save PNG</b> may be blocked inside a sandboxed preview iframe — works when opened normally.<br />
-        • The LoRA Studio engine applies a content filter; blocked prompts return a message.
+        • Free Spaces sleep when idle; the first request can take 30–60 s to wake and will queue under load.<br />
+        • Images are sent to the Space as base64 JSON, so nothing is uploaded to a third party of your own.<br />
+        • <b>Save PNG</b> may be blocked when this page runs inside a sandboxed preview iframe — open the file directly in your browser (or host it) and it works normally.<br />
+        • The Space applies a content filter (NCII guard); blocked prompts return a message instead of an image.<br />
+        • Some Spaces expose a plain <span class="mono">/predict</span> endpoint instead of named ones — use the Custom Space tab for those.
       </div>
     </div>
   </section>
 </div>
 
 <script type="module">
-import { Client, handle_file } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
-/* ================================================================== *
- *  Engines — every endpoint/parameter below was read from the
- *  Space's own /gradio_api/info, not guessed.
- * ================================================================== */
-const STUDIO_LORAS = [
+/* ------------------------------------------------------------------ *
+ *  Config
+ * ------------------------------------------------------------------ */
+const LORAS = [
   "Multiple-Angles","Photo-to-Anime","Anime-V2","Light-Migration","Upscaler",
   "Style-Transfer","Manga-Tone","Anything2Real","Fal-Multiple-Angles","Polaroid-Photo",
   "Unblur-Anything","Midnight-Noir-Eyes-Spotlight","Hyper-Realistic-Portrait",
@@ -332,217 +302,149 @@ const STUDIO_LORAS = [
   "Studio-DeLight","Cinematic-FlatLog"
 ];
 
-const MATE_LORAS = [
-  "PhotoCleanser","PhotoRestorer","PolaroidWarm","MonochromePencil","LZO-Zoom",
-  "Kontext-Watermark-Remover","Kontext-Unblur-Upscale","Kontext-Dev-Ultra-Realistic-Portrait"
+const PROMPT_PRESETS = [
+  { lora:"Photo-to-Anime",            prompt:"Transform into anime." },
+  { lora:"Multiple-Angles",           prompt:"Rotate the camera 45 degrees to the right." },
+  { lora:"Fal-Multiple-Angles",       prompt:"Front-right quarter view." },
+  { lora:"Upscaler",                  prompt:"Upscale this picture to 4K resolution." },
+  { lora:"Unblur-Anything",           prompt:"Unblur and upscale." },
+  { lora:"Pixar-Inspired-3D",         prompt:"Transform it into Pixar-inspired 3D." },
+  { lora:"Hyper-Realistic-Portrait",  prompt:"Transform into a hyper-realistic face portrait." },
+  { lora:"Studio-DeLight",            prompt:"Neutral uniform lighting. Preserve identity and composition." },
+  { lora:"Cinematic-FlatLog",         prompt:"Transform into a cinematic flat log." },
+  { lora:"Any-light",                 prompt:"Apply the lighting from image 2 to image 1." },
+  { lora:"Light-Migration",           prompt:"Refer to the color tone, remove the original lighting from Image 1, and relight Image 1 based on the lighting and color tone of Image 2." },
+  { lora:"Style-Transfer",            prompt:"Convert Image 1 to the style of Image 2." },
+  { lora:"Anything2Real",             prompt:"Change the picture to realistic photograph." },
+  { lora:"Polaroid-Photo",            prompt:"cinematic polaroid with soft grain subtle vignette gentle lighting white frame handwritten photographed preserving realistic texture and details." },
+  { lora:"Noir-Comic-Book",           prompt:"Transform into a noir comic book style." },
+  { lora:"Manga-Tone",                prompt:"Paint with manga tone." },
 ];
 
-const TWO_IMAGE_LORAS = ["Style-Transfer","Any-light","Light-Migration"];
-
-const ENGINES = {
-  faithful: {
-    label: "Faithful edit — Qwen-Image-Edit (official, no LoRA)",
-    space: "Qwen/Qwen-Image-Edit",
-    endpoint: "/infer",
-    kind: "infer-qwen",
-    title: "Faithful edit · official Qwen-Image-Edit",
-    desc: "50 steps, no style LoRA, prompt rewriting on. The closest thing to “change one thing, keep the photo”. Slower, but it won't repaint faces.",
-    steps: 50, guidance: 4.0, rewrite: true,
-    prompts: [
-      "Enhance the photo quality. Keep the person's identity and the composition exactly the same.",
-      "Remove the object in the background and fill it naturally.",
-      "Replace the background with a plain, softly lit studio backdrop.",
-      "Fix the lighting so the face is evenly lit and the colours look natural."
-    ]
-  },
-  restore: {
-    label: "Restore & clean up — Photo-Mate i2i",
-    space: "prithivMLmods/Photo-Mate-i2i",
-    endpoint: "/infer",
-    kind: "infer-mate",
-    title: "Restore & clean up · Photo-Mate i2i",
-    desc: "28 steps, guidance 2.5 — the settings these restoration LoRAs are actually tuned for. Built for cleaning, de-noising, watermark removal and unblur/upscale.",
-    steps: 28, guidance: 2.5, rewrite: false,
-    loras: MATE_LORAS,
-    loraDefault: "PhotoCleanser",
-    loraDesc: {
-      "PhotoCleanser": "General clean-up: noise, grain, compression artifacts. Start here.",
-      "PhotoRestorer": "Older/damaged photos — scratches, fading, softness.",
-      "Kontext-Watermark-Remover": "Removes watermarks and stamps.",
-      "Kontext-Unblur-Upscale": "Sharpens and enlarges soft photos.",
-      "LZO-Zoom": "Boosts resolution.",
-      "Kontext-Dev-Ultra-Realistic-Portrait": "Kontext-based portrait realism — far better behaved than the 2511 LoRA of the same name.",
-      "PolaroidWarm": "Adds a warm polaroid look (a style, not a cleanup).",
-      "MonochromePencil": "Black-and-white pencil sketch (a style, not a cleanup)."
-    },
-    prompts: [
-      "Restore this photograph: remove scratches, noise and blur, keep the faces unchanged.",
-      "Remove the watermark.",
-      "Unblur and upscale this photo to high resolution.",
-      "Clean up the image and improve clarity, keeping it natural."
-    ]
-  },
-  studio: {
-    label: "LoRA Studio — styles (anime, 3D, angles) · use with care",
-    space: "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
-    endpoint: "/edit_image",
-    kind: "b64",
-    title: "LoRA Studio · styled looks only",
-    desc: "Forces one style LoRA at weight 1.0 on a 4-step distilled transformer. Great for the demo cards, destructive on real photos. Steps raised to 24 to reduce artifacts.",
-    steps: 24, guidance: 4, rewrite: false,
-    loras: STUDIO_LORAS,
-    loraDefault: "Unblur-Anything",
-    loraDesc: {
-      "Unblur-Anything": "Closest thing to a faithful pass in this engine.",
-      "Upscaler": "Enlarge.",
-      "Multiple-Angles": "Move the camera: “Rotate the camera 45 degrees to the right.”",
-      "Fal-Multiple-Angles": "Camera framing: “Front-right quarter view.”",
-      "Photo-to-Anime": "Anime repaint — will change the face.",
-      "Anime-V2": "Anime repaint, newer adapter.",
-      "Pixar-Inspired-3D": "3D cartoon repaint.",
-      "Noir-Comic-Book": "Comic-book repaint.",
-      "Manga-Tone": "Manga tone repaint.",
-      "Polaroid-Photo": "Polaroid look.",
-      "Hyper-Realistic-Portrait": "A stylised portrait aesthetic — NOT a fidelity enhancer.",
-      "Ultra-Realistic-Portrait": "As above, stronger.",
-      "Anything2Real": "Push an illustration toward photorealism.",
-      "Studio-DeLight": "Neutral uniform lighting.",
-      "Cinematic-FlatLog": "Flat-log cinematic grade.",
-      "Midnight-Noir-Eyes-Spotlight": "Noir lighting effect.",
-      "Style-Transfer": "Needs 2 images: “Convert Image 1 to the style of Image 2.”",
-      "Any-light": "Needs 2 images: “Apply the lighting from image 2 to image 1.”",
-      "Light-Migration": "Needs 2 images: relight Image 1 to match Image 2's tone."
-    },
-    prompts: [
-      "Rotate the camera 45 degrees to the right.",
-      "Upscale this picture to 4K resolution.",
-      "Transform into anime.",
-      "Transform it into Pixar-inspired 3D."
-    ]
-  }
-};
-
 const SPACE_PRESETS = [
-  "Qwen/Qwen-Image-Edit",
-  "prithivMLmods/Photo-Mate-i2i",
-  "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
   "selfit-camera/Omni-Image-Editor",
+  "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
   "linoyts/Qwen-Image-Edit-Angles",
+  "Qwen/Qwen-Image-Edit",
   "prithivMLmods/Qwen-Image-Edit-2509-LoRAs-Fast",
+  "multimodalart/Qwen-Image-Edit-Fast",
   "linoyts/Qwen-Image-Edit-Inpaint",
   "fffiloni/diffusers-image-outpaint"
 ];
 
-/* ================================================================== *
- *  State (memory only — no storage APIs are used)
- * ================================================================== */
+/* ------------------------------------------------------------------ *
+ *  State (in-memory only — no localStorage in sandboxed previews)
+ * ------------------------------------------------------------------ */
 const S = {
-  engineKey: "faithful",
-  client: null,
-  clientSpace: null,
+  loraClient: null,
+  loraSpaceId: "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
   customClient: null,
-  customApi: null,
+  customSpaceId: null,
+  apiInfo: null,
   token: "",
-  images: [],
+  images: [],          // { id, name, dataUrl }
   lastResult: null,
   history: [],
   busy: false,
-  seq: 1
+  imgSeq: 1
 };
 
+/* ------------------------------------------------------------------ *
+ *  DOM helpers
+ * ------------------------------------------------------------------ */
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
-const cur = () => ENGINES[S.engineKey];
 
-function setStatus(node, msg, isErr) { node.textContent = msg || ""; node.classList.toggle("err", !!isErr); }
-function setConn(text, kind) { $("connText").textContent = text; $("connPill").className = "pill" + (kind ? " " + kind : ""); }
+function setStatus(node, msg, isErr) {
+  node.textContent = msg || "";
+  node.classList.toggle("err", !!isErr);
+}
 
-/* ---------------- tabs ---------------- */
+function setConn(text, kind) {
+  $("connText").textContent = text;
+  const p = $("connPill");
+  p.className = "pill" + (kind ? " " + kind : "");
+}
+
+/* ------------------------------------------------------------------ *
+ *  Tabs
+ * ------------------------------------------------------------------ */
 document.querySelectorAll(".tab").forEach((t) => {
   t.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
-    ["editor","custom","settings"].forEach((k) => $("tab-" + k).classList.toggle("hidden", k !== t.dataset.tab));
+    ["lora","custom","settings"].forEach((k) => $("tab-" + k).classList.toggle("hidden", k !== t.dataset.tab));
   });
 });
 
-/* ---------------- engine wiring ---------------- */
-const engSel = $("engine");
-Object.entries(ENGINES).forEach(([k, e]) => { const o = el("option"); o.value = k; o.textContent = e.label; engSel.appendChild(o); });
-engSel.value = "faithful";
+/* ------------------------------------------------------------------ *
+ *  Populate LoRA select + prompt chips + space presets
+ * ------------------------------------------------------------------ */
+const loraSel = $("lora");
+LORAS.forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; loraSel.appendChild(o); });
+loraSel.value = "Photo-to-Anime";
 
-function applyEngine(key, keepPrompt) {
-  S.engineKey = key;
-  S.client = null; S.clientSpace = null;
-  const e = cur();
-  $("engTitle").textContent = e.title;
-  $("engDesc").textContent = e.desc;
-  $("steps").value = e.steps;
-  $("guidance").value = e.guidance;
-  $("randomize").checked = true;
-  $("paramHint").textContent = `This engine's own defaults: ${e.steps} steps · guidance ${e.guidance}.`;
-
-  const wrap = $("loraWrap");
-  if (e.loras) {
-    wrap.classList.remove("hidden");
-    const sel = $("lora");
-    sel.innerHTML = "";
-    e.loras.forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; sel.appendChild(o); });
-    sel.value = e.loraDefault;
-    updLoraDesc();
-  } else {
-    wrap.classList.add("hidden");
-  }
-
-  const box = $("promptChips");
-  box.innerHTML = "";
-  (e.prompts || []).forEach((p) => {
-    const c = el("span", "chip", p.length > 46 ? p.slice(0, 44) + "…" : p);
-    c.title = p;
-    c.addEventListener("click", () => { $("prompt").value = p; });
-    box.appendChild(c);
+const chipBox = $("promptChips");
+PROMPT_PRESETS.forEach((p) => {
+  const c = el("span", "chip", p.prompt.length > 42 ? p.prompt.slice(0, 40) + "…" : p.prompt);
+  c.title = p.prompt;
+  c.addEventListener("click", () => {
+    $("prompt").value = p.prompt;
+    if (LORAS.includes(p.lora)) loraSel.value = p.lora;
   });
-  if (!keepPrompt) $("prompt").value = "";
-  setStatus($("status"), "");
-}
+  chipBox.appendChild(c);
+});
 
-function updLoraDesc() {
-  const d = cur().loraDesc || {};
-  $("loraDesc").textContent = d[$("lora").value] || "";
-}
+const presetBox = $("spacePresets");
+SPACE_PRESETS.forEach((id) => {
+  const c = el("span", "chip", id.split("/")[1] || id);
+  c.title = id;
+  c.addEventListener("click", () => { $("customSpace").value = id; });
+  presetBox.appendChild(c);
+});
 
-engSel.addEventListener("change", () => applyEngine(engSel.value, false));
-$("lora").addEventListener("change", updLoraDesc);
-
-/* ---------------- images ---------------- */
+/* ------------------------------------------------------------------ *
+ *  Image intake: file picker, drag & drop, clipboard paste
+ * ------------------------------------------------------------------ */
 const fileInput = $("fileInput");
 const drop = $("drop");
+
 drop.addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", () => { addFiles([...fileInput.files]); fileInput.value = ""; });
-["dragenter","dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
-["dragleave","dragend"].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove("over")));
+
+["dragenter","dragover"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); })
+);
+["dragleave","dragend"].forEach((ev) =>
+  drop.addEventListener(ev, () => drop.classList.remove("over"))
+);
 drop.addEventListener("drop", (e) => {
   e.preventDefault(); drop.classList.remove("over");
   addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/")));
 });
+
+// Paste anywhere in the page
 document.addEventListener("paste", (e) => {
-  const files = [...(e.clipboardData?.items || [])].filter((i) => i.type.startsWith("image/"))
-    .map((i) => i.getAsFile()).filter(Boolean);
+  const items = [...(e.clipboardData?.items || [])];
+  const files = items.filter((i) => i.type.startsWith("image/")).map((i) => i.getAsFile()).filter(Boolean);
   if (files.length) { e.preventDefault(); addFiles(files); }
 });
+// Paste when the paste zone is focused (explicit affordance from the HF UI)
 $("pasteZone").addEventListener("paste", (e) => {
-  const files = [...(e.clipboardData?.items || [])].filter((i) => i.type.startsWith("image/"))
+  const files = [...(e.clipboardData?.items || [])]
+    .filter((i) => i.type.startsWith("image/"))
     .map((i) => i.getAsFile()).filter(Boolean);
   if (files.length) { e.preventDefault(); addFiles(files); }
 });
 
 function addFiles(files) {
-  if (!files.length) return;
   let pending = files.length;
+  if (!pending) return;
   files.forEach((f) => {
     const r = new FileReader();
     r.onload = () => {
-      S.images.push({ id: S.seq++, name: f.name || `pasted-${S.seq}.png`, dataUrl: r.result });
-      if (--pending === 0) { renderThumbs(); warnSmall(); setStatus($("status"), `${S.images.length} image(s) ready.`); }
+      S.images.push({ id: S.imgSeq++, name: f.name || `pasted-${S.imgSeq}.png`, dataUrl: r.result });
+      renderThumbs();
+      if (--pending === 0) setStatus($("status"), `${S.images.length} image(s) ready.`);
     };
     r.onerror = () => { if (--pending === 0) renderThumbs(); };
     r.readAsDataURL(f);
@@ -555,211 +457,156 @@ function renderThumbs() {
   S.images.forEach((im, i) => {
     const t = el("div", "thumb");
     const img = el("img"); img.src = im.dataUrl; img.alt = im.name;
-    const rm = el("button", null, "×"); rm.title = "Remove";
+    const rm = el("button", null, "×");
+    rm.title = "Remove";
     rm.addEventListener("click", () => { S.images = S.images.filter((x) => x.id !== im.id); renderThumbs(); });
-    t.append(img, rm, el("span", "idx", "img" + (i + 1)));
+    const idx = el("span", "idx", "img" + (i + 1));
+    t.append(img, rm, idx);
     box.appendChild(t);
   });
-}
-
-function warnSmall() {
-  if (!S.images.length) return;
-  const img = new Image();
-  img.onload = () => {
-    if (Math.max(img.width, img.height) < 768) {
-      setStatus($("status"), `Heads up: your first image is ${img.width}×${img.height}. Output size follows image 1, so small inputs give soft results.`, true);
-    }
-  };
-  img.src = S.images[0].dataUrl;
+  if (S.images.length > 1) {
+    const hint = el("div", "hint", "Order matters: “image 1”, “image 2” in your prompt refer to these.");
+    hint.style.width = "100%";
+    box.appendChild(hint);
+  }
 }
 
 $("clearAll").addEventListener("click", () => { S.images = []; renderThumbs(); setStatus($("status"), ""); });
 
-/* ---------------- connection ---------------- */
-async function getClient(engine, statusNode) {
-  if (S.client && S.clientSpace === engine.space) return S.client;
-  setConn("Connecting…", "busy");
-  setStatus(statusNode, `Connecting to ${engine.space}… (sleeping Spaces take ~30–60 s to start)`);
-  const opts = { status_callback: (st) => {
+/* ------------------------------------------------------------------ *
+ *  Connection
+ * ------------------------------------------------------------------ */
+function statusCallback(label) {
+  return (st) => {
+    // Defensive: the callback shape has changed across client versions.
+    let stage = "";
     try {
-      const stage = st?.status?.stage || st?.stage;
-      if (stage) setStatus(statusNode, `Space status: ${stage}…`);
-    } catch (_) {}
-  }};
-  if (S.token && S.token.startsWith("hf_")) opts.token = S.token;
-  S.client = await Client.connect(engine.space, opts);
-  S.clientSpace = engine.space;
-  setConn("Connected: " + engine.space.split("/")[1], "ok");
-  return S.client;
-}
-
-/* ---------------- payload / result ---------------- */
-function dataUrlToFile(dataUrl, name = "image.png") {
-  return new Promise((resolve) => {
-    fetch(dataUrl)
-      .then((r) => r.blob())
-      .then((b) => resolve(new File([b], name, { type: b.type || "image/png" })))
-      .catch(() => resolve(null));
-  });
-}
-
-function randSeed() { return Math.floor(Math.random() * 2147483647); }
-
-async function runOnce(engine, client, statusNode, forceRandom) {
-  const prompt = $("prompt").value.trim();
-  const randomize = forceRandom ? true : $("randomize").checked;
-  const seed = randomize ? randSeed() : (parseInt($("seed").value, 10) || 0);
-  const steps = parseInt($("steps").value, 10) || engine.steps;
-  const guidance = parseFloat($("guidance").value) || engine.guidance;
-  let payload;
-
-  if (engine.kind === "b64") {
-    payload = {
-      images_b64_json: JSON.stringify(S.images.map((i) => i.dataUrl)),
-      prompt,
-      lora_adapter: $("lora").value,
-      seed,
-      randomize_seed: randomize,
-      guidance_scale: guidance,
-      steps
-    };
-  } else {
-    const file = await dataUrlToFile(S.images[0].dataUrl, S.images[0].name);
-    if (!file) throw new Error("Could not read the first image.");
-    if (engine.kind === "infer-qwen") {
-      payload = {
-        image: await handle_file(file),
-        prompt,
-        seed,
-        randomize_seed: randomize,
-        true_guidance_scale: guidance,
-        num_inference_steps: steps,
-        rewrite_prompt: !!engine.rewrite
-      };
-    } else {
-      payload = {
-        input_image: await handle_file(file),
-        prompt,
-        lora_adapter: $("lora").value,
-        seed,
-        randomize_seed: randomize,
-        guidance_scale: guidance,
-        steps
-      };
-    }
-  }
-
-  const job = client.submit(engine.endpoint, payload);
-  let out = null;
-  for await (const m of job) {
-    if (m.type === "status") {
-      const pos = m.position != null ? `queue position ${m.position}` : "queued";
-      const eta = m.eta != null ? ` · ETA ${Math.round(m.eta)}s` : "";
-      setStatus(statusNode, `Running — ${pos}${eta}`);
-    } else if (m.type === "data") out = m.data;
-  }
-  return extractImage(engine, out, seed);
-}
-
-function extractImage(engine, out, seed) {
-  const d = Array.isArray(out) ? out[0] : out;
-  if (engine.kind === "b64") {
-    if (d && d.status === "blocked") throw new Error(d.message || "Blocked by the content filter.");
-    if (d && d.image) return { src: d.image, seed: d.seed != null ? d.seed : seed };
-    if (d && d.message) throw new Error(d.message);
-    throw new Error("The Space returned no image.");
-  }
-  if (typeof d === "string") return { src: absolutize(d, engine.space), seed };
-  if (d && d.url) return { src: absolutize(d.url, engine.space), seed };
-  let found = null;
-  const walk = (v, depth) => {
-    if (found || v == null || depth > 4) return;
-    if (typeof v === "string" && /^(https?:|data:image)/.test(v)) { found = v; return; }
-    if (typeof v === "object") Object.values(v).forEach((x) => walk(x, depth + 1));
+      stage = st?.status?.stage || st?.stage || "";
+    } catch (_) { stage = ""; }
+    if (stage) setStatus($(label), `Space status: ${stage}…`);
   };
-  walk(d, 0);
-  if (!found) throw new Error("Could not find an image in the Space response.");
-  return { src: absolutize(found, engine.space), seed };
 }
 
-function absolutize(u, spaceId) {
-  if (/^https?:|^data:/.test(u)) return u;
-  const host = `https://${spaceId.replace("/", "-").toLowerCase()}.hf.space`;
-  return host + (u.startsWith("/") ? u : "/" + u);
-}
-
-/* ---------------- generate ---------------- */
-function guardInputs() {
-  if (!S.images.length) { setStatus($("status"), "Add a photo first (drop, upload, or paste).", true); return false; }
-  if (!$("prompt").value.trim()) { setStatus($("status"), "Write a prompt describing the edit.", true); return false; }
-  const engine = cur();
-  if (engine.kind === "b64" && TWO_IMAGE_LORAS.includes($("lora").value) && S.images.length < 2) {
+async function connectLora(spaceId, token) {
+  setConn("Connecting…", "busy");
+  setStatus($("status"), `Connecting to ${spaceId}… (a sleeping Space can take ~30–60 s to start)`);
+  try {
+    const opts = { status_callback: statusCallback("status") };
+    if (token && token.startsWith("hf_")) opts.token = token;
+    S.loraClient = await Client.connect(spaceId, opts);
+    S.loraSpaceId = spaceId;
+    setConn("Connected: " + spaceId.split("/")[1], "ok");
+    setStatus($("status"), "Connected. Ready to edit.");
+    return true;
+  } catch (e) {
+    S.loraClient = null;
+    setConn("Connection failed", "err");
     setStatus($("status"),
-      `“${$("lora").value}” needs two images. Upload both, then refer to them as “image 1” and “image 2” in the prompt.`, true);
+      "Could not connect: " + (e?.message || e) +
+      "\n\nIf this is a network/CORS block in a sandboxed preview, download this file and open it directly in your browser.", true);
     return false;
   }
-  return true;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Main generate flow (exact schema of the LoRAs-Fast Space)
+ * ------------------------------------------------------------------ */
+function payloadFor() {
+  const prompt = $("prompt").value.trim();
+  return {
+    images_b64_json: JSON.stringify(S.images.map((i) => i.dataUrl)),
+    prompt,
+    lora_adapter: loraSel.value,
+    seed: Math.max(0, parseInt($("seed").value, 10) || 0),
+    randomize_seed: $("randomize").checked,
+    guidance_scale: parseFloat($("guidance").value) || 4,
+    steps: Math.max(1, parseInt($("steps").value, 10) || 4)
+  };
 }
 
 $("generate").addEventListener("click", async () => {
-  if (S.busy || !guardInputs()) return;
-  const engine = cur();
-  S.busy = true; $("generate").disabled = true; $("variations").disabled = true;
+  if (S.busy) return;
+  if (!S.images.length) { setStatus($("status"), "Add at least one image first (drop, upload, or paste).", true); return; }
+  const payload = payloadFor();
+  if (!payload.prompt) { setStatus($("status"), "Write a prompt describing the edit.", true); return; }
+
+  if (!S.loraClient) {
+    const ok = await connectLora(S.loraSpaceId, S.token);
+    if (!ok) return;
+  }
+
+  S.busy = true;
+  $("generate").disabled = true;
+  setConn("Generating…", "busy");
+  setStatus($("status"), "Queued — waiting for the Space…");
   const t0 = Date.now();
+
   try {
-    const client = await getClient(engine, $("status"));
-    const r = await runOnce(engine, client, $("status"), false);
-    showResult(r.src, engine, r.seed, Date.now() - t0);
+    // Optional pre-flight safety check (pure CPU on the Space, no GPU queue)
+    if ($("checkSafety").dataset.auto === "1") await safetyCheck(payload.prompt, false);
+
+    const job = S.loraClient.submit("/edit_image", payload);
+    let out = null;
+    for await (const m of job) {
+      if (m.type === "status") {
+        const pos = m.position != null ? `queue position ${m.position}` : "queued";
+        const eta = m.eta != null ? ` · ETA ${Math.round(m.eta)}s` : "";
+        setStatus($("status"), `Running — ${pos}${eta}`);
+      } else if (m.type === "data") {
+        out = m.data;
+      }
+    }
+
+    const data = Array.isArray(out) ? out[0] : out;
+    if (!data) throw new Error("No response payload from the Space.");
+    if (data.status === "blocked") {
+      setStatus($("status"), data.message || "Prompt blocked by the content filter.", true);
+      return;
+    }
+    if (!data.image) throw new Error(data.message || "The Space returned no image.");
+
+    showResult(data.image, payload, Date.now() - t0);
     setStatus($("status"), "Done.");
   } catch (e) {
-    setConn("Error", "err");
-    setStatus($("status"), "Failed: " + (e?.message || e) +
-      "\n\nRetry, or add a Hugging Face token in Settings if you're being rate-limited.", true);
+    setStatus($("status"),
+      "Generation failed: " + (e?.message || e) +
+      "\n\nTip: the Space may have been restarted or is rate-limiting anonymous traffic. Retry, or add a Hugging Face token in Settings.", true);
   } finally {
-    S.busy = false; $("generate").disabled = false; $("variations").disabled = false;
+    S.busy = false;
+    $("generate").disabled = false;
+    setConn("Connected: " + S.loraSpaceId.split("/")[1], "ok");
   }
 });
 
-$("variations").addEventListener("click", async () => {
-  if (S.busy || !guardInputs()) return;
-  const engine = cur();
-  S.busy = true; $("generate").disabled = true; $("variations").disabled = true;
-  const grid = $("varGrid");
-  grid.innerHTML = ""; $("varCard").classList.remove("hidden");
+async function safetyCheck(prompt, loud = true) {
+  if (!S.loraClient) { if (loud) setStatus($("status"), "Not connected yet.", true); return null; }
   try {
-    const client = await getClient(engine, $("status"));
-    for (let i = 1; i <= 3; i++) {
-      setStatus($("status"), `Variation ${i} of 3…`);
-      const r = await runOnce(engine, client, $("status"), true);
-      const cell = el("div", "v");
-      const im = el("img"); im.src = r.src;
-      cell.appendChild(im);
-      cell.addEventListener("click", () => {
-        [...grid.children].forEach((c) => c.classList.remove("sel"));
-        cell.classList.add("sel");
-        showResult(r.src, engine, r.seed, 0);
-      });
-      grid.appendChild(cell);
-    }
-    setStatus($("status"), "Pick your favourite variation — it loads into Result.");
+    const res = await S.loraClient.predict("/check_safety", { prompt });
+    const d = Array.isArray(res.data) ? res.data[0] : res.data;
+    if (loud) setStatus($("status"), d?.status === "blocked" ? ("⛔ " + d.message) : "✅ Prompt passed the content filter.", d?.status === "blocked");
+    return d;
   } catch (e) {
-    setStatus($("status"), "Variations failed: " + (e?.message || e), true);
-  } finally {
-    S.busy = false; $("generate").disabled = false; $("variations").disabled = false;
+    if (loud) setStatus($("status"), "Safety check unavailable: " + (e?.message || e), true);
+    return null;
   }
-});
+}
 
-function showResult(src, engine, seed, ms) {
+$("checkSafety").addEventListener("click", () => safetyCheck($("prompt").value.trim(), true));
+// Enable the automatic pre-flight check after the user has used it once
+$("checkSafety").dataset.auto = "0";
+
+function showResult(dataUrl, payload, ms) {
   const out = $("out");
   out.innerHTML = "";
-  const img = el("img"); img.src = src; img.alt = "edited result";
+  const img = el("img"); img.src = dataUrl; img.alt = "edited result";
   out.appendChild(img);
-  S.lastResult = src;
-  $("metaEngine").textContent = (engine.title.split("·")[1] || engine.title).trim();
-  $("metaSeed").textContent = String(seed);
-  $("metaLora").textContent = engine.loras ? $("lora").value : "none";
-  $("metaTime").textContent = ms ? (ms / 1000).toFixed(1) + "s" : "—";
-  S.history.unshift({ src, prompt: $("prompt").value.trim(), engine: engine.title });
+  S.lastResult = dataUrl;
+
+  $("metaSeed").textContent = payload.randomize_seed ? "(randomized)" : String(payload.seed);
+  $("metaLora").textContent = payload.lora_adapter;
+  $("metaTime").textContent = (ms / 1000).toFixed(1) + "s";
+
+  S.history.unshift({ dataUrl, prompt: payload.prompt, lora: payload.lora_adapter });
   if (S.history.length > 24) S.history.pop();
   renderHistory();
 }
@@ -769,11 +616,10 @@ function renderHistory() {
   box.innerHTML = "";
   if (!S.history.length) { box.appendChild(el("span", "hint", "No results yet.")); return; }
   S.history.forEach((h) => {
-    const img = el("img"); img.src = h.src; img.title = h.engine + " · " + h.prompt;
+    const img = el("img"); img.src = h.dataUrl; img.title = h.lora + " · " + h.prompt;
     img.addEventListener("click", () => {
-      $("out").innerHTML = "";
-      const b = el("img"); b.src = h.src; $("out").appendChild(b);
-      S.lastResult = h.src;
+      $("out").innerHTML = ""; const big = el("img"); big.src = h.dataUrl; $("out").appendChild(big);
+      S.lastResult = h.dataUrl; $("metaLora").textContent = h.lora;
     });
     box.appendChild(img);
   });
@@ -781,7 +627,7 @@ function renderHistory() {
 
 $("useAsInput").addEventListener("click", () => {
   if (!S.lastResult) return;
-  S.images.push({ id: S.seq++, name: "result.png", dataUrl: S.lastResult });
+  S.images.push({ id: S.imgSeq++, name: "result.png", dataUrl: S.lastResult });
   renderThumbs();
 });
 
@@ -790,103 +636,91 @@ $("saveResult").addEventListener("click", () => {
   try {
     const a = document.createElement("a");
     a.href = S.lastResult;
-    a.download = `edit-${Date.now()}.png`;
+    a.download = `qwen-edit-${Date.now()}.png`;
     document.body.appendChild(a); a.click(); a.remove();
     $("saveHint").textContent = "";
   } catch (e) {
-    $("saveHint").textContent = "Download blocked in this preview — open the page directly in a browser.";
+    $("saveHint").textContent = "Download blocked in this preview — open the page directly in a browser to save.";
   }
 });
 
-/* ---------------- settings ---------------- */
-$("applyToken").addEventListener("click", () => {
-  S.token = $("token").value.trim();
-  S.client = null; S.clientSpace = null;
-  setStatus($("settingsStatus"), S.token ? "Token applied — it will be used on the next connect." : "Token cleared.");
+$("steps").addEventListener("input", () => {
+  const v = parseInt($("steps").value, 10) || 0;
+  $("stepBadge").textContent = v <= 8 ? v + "-Step Fast" : v + " steps";
 });
+
+/* ------------------------------------------------------------------ *
+ *  Settings tab
+ * ------------------------------------------------------------------ */
+$("applySettings").addEventListener("click", async () => {
+  S.token = $("token").value.trim();
+  const sid = $("spaceId").value.trim();
+  if (!sid) { setStatus($("settingsStatus"), "Enter a Space ID.", true); return; }
+  setStatus($("settingsStatus"), "Applying…");
+  const ok = await connectLora(sid, S.token);
+  setStatus($("settingsStatus"), ok ? "Connected as " + sid : "Failed — see status under the editor.", !ok);
+});
+
 $("disconnect").addEventListener("click", () => {
-  S.client = null; S.clientSpace = null;
+  S.loraClient = null;
   setConn("Not connected");
   setStatus($("settingsStatus"), "Disconnected.");
 });
 
-/* ================================================================== *
- *  Custom Space tab — auto-form from the Space's own API
- * ================================================================== */
-const presetBox = $("spacePresets");
-SPACE_PRESETS.forEach((id) => {
-  const c = el("span", "chip", id.split("/")[1] || id);
-  c.title = id;
-  c.addEventListener("click", () => { $("customSpace").value = id; });
-  presetBox.appendChild(c);
-});
-
+/* ------------------------------------------------------------------ *
+ *  Custom Space tab — discover the API and build a form from it
+ * ------------------------------------------------------------------ */
 function typeOf(p) {
-  const t = String(p?.type?.type ?? p?.type ?? "");
+  const t = String(p?.type ?? "");
   const c = String(p?.component ?? "");
   if (/boolean/i.test(t) || /checkbox/i.test(c)) return "boolean";
   if (/number|integer|float/i.test(t) || /slider|number/i.test(c)) return "number";
-  if (/ImageData|filepath|PIL|Image/i.test(t) || /^image/i.test(c) || /^file/i.test(c)) return "image";
+  if (/filepath|PIL|Image/i.test(t) || /^image/i.test(c) || /^file/i.test(c)) return "image";
   return "string";
 }
+
 const IMG_RE = /image|img|mask|photo|reference|init/i;
 
 function buildForm(params) {
   const host = $("genForm");
   host.innerHTML = "";
   params.forEach((p, i) => {
-    const name = p.parameter_name || ("arg" + i);
     if (p.hidden) return;
-    const kind = typeOf(p);
-    const isImage = kind === "image" || IMG_RE.test(name);
+    const name = p.parameter_name || ("arg" + i);
+    const isImage = typeOf(p) === "image" || IMG_RE.test(name);
     const fld = el("div", "fld");
-
-    if (kind === "boolean") {
-      const wrap = el("label", "toggle");
-      const cb = el("input"); cb.type = "checkbox";
-      cb.dataset.kind = "boolean"; cb.dataset.name = name;
-      if (p.parameter_default) cb.checked = true;
-      wrap.append(cb, document.createTextNode(" " + (p.label || name)));
-      fld.appendChild(wrap); host.appendChild(fld); return;
-    }
-
-    const lab = el("label", "field", (p.label ? p.label + " · " : "") + name);
+    const lab = el("label", "field", (p.label || name) + "  ·  " + (p.type || "any"));
     lab.htmlFor = "cf_" + name;
     fld.appendChild(lab);
 
     let input;
     if (isImage) {
       input = el("input"); input.type = "file"; input.accept = "image/*";
-      input.multiple = Array.isArray(p.parameter_default);
-      input.dataset.kind = "image"; input.dataset.name = name;
-    } else if (kind === "number") {
-      input = el("input"); input.type = "number"; input.step = "any";
+      input.multiple = true; input.id = "cf_" + name; input.dataset.kind = "image"; input.dataset.name = name;
+      if (Array.isArray(p.parameter_default)) input.multiple = true;
+    } else if (typeOf(p) === "boolean") {
+      input = el("input"); input.type = "checkbox"; input.id = "cf_" + name;
+      input.dataset.kind = "boolean"; input.dataset.name = name;
+      if (p.parameter_default) input.checked = true;
+      lab.textContent = "";
+      const wrap = el("label", "toggle");
+      wrap.append(input, document.createTextNode(" " + (p.label || name)));
+      fld.appendChild(wrap);
+      host.appendChild(fld);
+      return;
+    } else if (typeOf(p) === "number") {
+      input = el("input"); input.type = "number"; input.step = "any"; input.id = "cf_" + name;
       input.dataset.kind = "number"; input.dataset.name = name;
       if (p.parameter_default != null) input.value = p.parameter_default;
-    } else if (p.type && p.type.enum) {
-      input = el("select");
-      input.dataset.kind = "string"; input.dataset.name = name;
-      p.type.enum.forEach((v) => { const o = el("option"); o.value = v; o.textContent = v; input.appendChild(o); });
-      if (p.parameter_default) input.value = p.parameter_default;
     } else {
       const long = /prompt|instruction|caption|text/i.test(name);
       input = long ? document.createElement("textarea") : el("input");
       if (!long) input.type = "text";
-      input.dataset.kind = "string"; input.dataset.name = name;
-      if (typeof p.parameter_default === "string") input.value = p.parameter_default;
+      input.id = "cf_" + name; input.dataset.kind = "string"; input.dataset.name = name;
+      if (p.parameter_default != null && typeof p.parameter_default === "string") input.value = p.parameter_default;
     }
-    input.id = "cf_" + name;
     fld.appendChild(input);
     host.appendChild(fld);
-  });
-}
-
-function readAsDataUrl(file) {
-  return new Promise((res) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = () => res(null);
-    r.readAsDataURL(file);
   });
 }
 
@@ -896,16 +730,30 @@ async function collectForm() {
   for (const inp of inputs) {
     const k = inp.dataset.kind, name = inp.dataset.name;
     if (k === "boolean") payload[name] = inp.checked;
-    else if (k === "number") payload[name] = inp.value === "" ? 0 : parseFloat(inp.value);
+    else if (k === "number") payload[name] = inp.value === "" ? (inp.parameterDefault ?? 0) : parseFloat(inp.value);
     else if (k === "image") {
       const files = [...inp.files];
-      if (!files.length) { payload[name] = null; continue; }
-      const dataUrl = await readAsDataUrl(files[0]);
-      const f = dataUrl ? await dataUrlToFile(dataUrl, files[0].name) : files[0];
-      payload[name] = await handle_file(f || files[0]);
+      const blobs = [];
+      for (const f of files) blobs.push(await toBlobFile(f));
+      payload[name] = blobs.length > 1 ? blobs : (blobs[0] ?? null);
     } else payload[name] = inp.value;
   }
   return payload;
+}
+
+function toBlobFile(file) {
+  return new Promise((resolve) => {
+    const r = new FileReader();
+    r.onload = async () => {
+      try {
+        const resp = await fetch(r.result);
+        const blob = await resp.blob();
+        resolve(new File([blob], file.name || "image.png", { type: blob.type || "image/png" }));
+      } catch (_) { resolve(file); }
+    };
+    r.onerror = () => resolve(file);
+    r.readAsDataURL(file);
+  });
 }
 
 $("inspectApi").addEventListener("click", async () => {
@@ -913,34 +761,45 @@ $("inspectApi").addEventListener("click", async () => {
   if (!sid) { setStatus($("customStatus"), "Enter a Space ID.", true); return; }
   setStatus($("customStatus"), "Connecting…");
   try {
-    const opts = {};
+    const opts = { status_callback: statusCallback("customStatus") };
     if (S.token && S.token.startsWith("hf_")) opts.token = S.token;
     S.customClient = await Client.connect(sid, opts);
-    S.customApi = await S.customClient.view_api();
-    $("apiDump").textContent = JSON.stringify(S.customApi, null, 2);
-    const eps = Object.keys(S.customApi.named_endpoints || {});
+    S.customSpaceId = sid;
+    S.apiInfo = await S.customClient.view_api();
+    $("apiDump").textContent = JSON.stringify(S.apiInfo, null, 2);
+
+    const eps = Object.keys(S.apiInfo.named_endpoints || {});
     const sel = $("endpoint");
     sel.innerHTML = "";
-    (eps.length ? eps : ["/predict"]).forEach((e) => { const o = el("option"); o.value = e; o.textContent = e; sel.appendChild(o); });
-    if (eps.length) { sel.value = eps[0]; buildForm(S.customApi.named_endpoints[eps[0]].parameters || []); }
-    setStatus($("customStatus"), `Connected. ${eps.length || 1} endpoint(s).`);
+    (eps.length ? eps : ["/predict"]).forEach((e) => {
+      const o = el("option"); o.value = e; o.textContent = e; sel.appendChild(o);
+    });
+    if (eps.length) {
+      sel.value = eps[0];
+      buildForm(S.apiInfo.named_endpoints[eps[0]].parameters || []);
+    }
+    setStatus($("customStatus"), `Connected. ${eps.length || 1} endpoint(s) found.`);
   } catch (e) {
     setStatus($("customStatus"), "Failed: " + (e?.message || e), true);
   }
 });
+
 $("connectCustom").addEventListener("click", () => $("inspectApi").click());
+
 $("endpoint").addEventListener("change", () => {
-  const info = S.customApi?.named_endpoints?.[$("endpoint").value];
+  const e = $("endpoint").value;
+  const info = S.apiInfo?.named_endpoints?.[e];
   if (info) buildForm(info.parameters || []);
 });
 
 $("runCustom").addEventListener("click", async () => {
-  if (!S.customClient || !S.customApi) { setStatus($("customRunStatus"), "Connect and inspect a Space first.", true); return; }
+  if (!S.customClient || !S.apiInfo) { setStatus($("customRunStatus"), "Connect and inspect a Space first.", true); return; }
+  const ep = $("endpoint").value;
   setStatus($("customRunStatus"), "Running…");
   $("customOut").innerHTML = '<div class="ph">Working…</div>';
   try {
     const payload = await collectForm();
-    const job = S.customClient.submit($("endpoint").value, payload);
+    const job = S.customClient.submit(ep, payload);
     let out = null;
     for await (const m of job) {
       if (m.type === "status" && m.position != null) setStatus($("customRunStatus"), "Queue position " + m.position);
@@ -959,23 +818,29 @@ function renderCustomOut(out) {
   box.innerHTML = "";
   const list = Array.isArray(out) ? out : [out];
   let shown = false;
-  const walk = (v, depth) => {
-    if (shown || depth > 4 || v == null) return;
+  const walk = (v, depth = 0) => {
+    if (depth > 4 || v == null) return;
     if (typeof v === "string" && /^(https?:|data:image)/.test(v)) {
-      const img = el("img"); img.src = v; box.appendChild(img); shown = true; return;
+      const img = el("img"); img.src = v; img.alt = "result"; box.appendChild(img); shown = true; return;
     }
     if (typeof v === "object") {
-      if (v.url || v.path) { walk(String(v.url || v.path), depth + 1); return; }
+      if (v.url || v.path) return walk(String(v.url || v.path), depth + 1);
       Object.values(v).forEach((x) => walk(x, depth + 1));
     }
   };
-  list.forEach((v) => walk(v, 0));
-  if (!shown) box.appendChild(el("pre", "api", JSON.stringify(out, null, 2)));
+  list.forEach((v) => walk(v));
+  if (!shown) {
+    box.innerHTML = "";
+    const pre = el("pre", "api", JSON.stringify(out, null, 2));
+    pre.style.maxHeight = "420px";
+    box.appendChild(pre);
+  }
 }
 
-/* ---------------- boot ---------------- */
-applyEngine("faithful", true);
-setStatus($("status"), "Ready. Faithful engine selected — safest for real photos.");
+/* ------------------------------------------------------------------ *
+ *  Boot
+ * ------------------------------------------------------------------ */
+setStatus($("status"), "Not connected yet — hit Generate and it will connect for you.");
 </script>
 </body>
 </html>
