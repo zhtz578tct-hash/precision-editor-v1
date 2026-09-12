@@ -210,11 +210,11 @@ $('gen').onclick=async()=>{
    const ok=await ensureConnect(); if(!ok) throw new Error('Not connected - add HF token in Settings');
    const lora=$('lora').value; const steps=parseInt($('steps').value)||4; const guidance=parseFloat($('guidance').value)||4;
    let seed=parseInt($('seed').value)||0; if($('rand').checked) seed=Math.floor(Math.random()*2147483647);
-   const files=S.images.map(im=>im.file).filter(Boolean);
+   const b64json = JSON.stringify(S.images.map(im=>im.url)); // dataUrl
    setStat($('status'),`Generating... (attempt ${attempt})\nPrompt: ${prompt}\nThis can take 30-60s on first wake`);
    setConn('Generating...','busy');
    const t0=performance.now();
-   const result=await S.client.predict('/edit_image',{images:files,prompt:prompt,lora:lora,steps:steps,guidance_scale:guidance,seed:seed});
+   const result=await S.client.predict('/edit_image',{images_b64_json:b64json,prompt:prompt,lora_adapter:lora,steps:steps,guidance_scale:guidance,seed:seed,randomize_seed:$('rand').checked});
    // result.data[0] is image
    let out=result.data?.[0]; let url=null;
    if(typeof out==='string') url=out; else if(out?.url) url=out.url; else if(Array.isArray(out) && out[0]?.url) url=out[0].url;
