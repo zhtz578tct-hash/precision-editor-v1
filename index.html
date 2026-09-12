@@ -1,846 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Qwen Image Edit Studio</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Edit Prompt Card</title>
 <style>
   :root{
-    --bg:#0b0e14; --panel:#141922; --panel-2:#1a212c; --line:#252d3a;
-    --text:#e6ebf2; --muted:#8b98a9; --accent:#ff7a45; --accent-2:#ffb020;
-    --green:#22c55e; --red:#ef4444; --blue:#5b8def;
-    --radius:14px;
+    --bg:#0b1220; --panel:#131c2e; --panel2:#1a2438; --line:#2a3752;
+    --ink:#e8eefb; --dim:#93a4c4; --blue:#3b82f6; --blue2:#60a5fa;
+    --good:#34d399; --warn:#fbbf24; --bad:#f87171;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
-    font-size:14px;line-height:1.5}
-  a{color:var(--accent-2)}
-  .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
-  header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
-  .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
-    background:linear-gradient(135deg,#ff7a45,#ff3d81);font-size:18px}
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
-    border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
-  .pill .dot{width:8px;height:8px;border-radius:99px;background:var(--muted)}
-  .pill.ok .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
-  .pill.err .dot{background:var(--red)}
-  .pill.busy .dot{background:var(--accent-2);animation:pulse 1s infinite}
-  @keyframes pulse{50%{opacity:.3}}
-  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
-  .tab{padding:9px 14px;border:1px solid transparent;border-bottom:none;border-radius:10px 10px 0 0;
-    background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600}
-  .tab.active{background:var(--panel);border-color:var(--line);color:var(--text)}
-  .tab:hover{color:var(--text)}
-  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
-  @media(max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
-  .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
-  .badge{display:inline-block;padding:2px 8px;border-radius:6px;background:#1f3a2a;color:#6ee7a0;font-size:11px;font-weight:700;margin-left:8px;vertical-align:middle}
-  .note{background:#2a1a12;border:1px solid #4a2a18;border-radius:10px;padding:10px 12px;font-size:12px;color:#f0c9a8;margin-bottom:12px}
-  .note b{color:#ffb020}
-  .drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:var(--panel-2);
-    padding:26px 16px;text-align:center;cursor:pointer;transition:.15s;position:relative}
-  .drop:hover,.drop.over{border-color:var(--accent);background:#1c2330}
-  .drop .big{font-size:26px;line-height:1;margin-bottom:8px}
-  .drop .sub{color:var(--muted);font-size:12px;margin-top:4px}
-  .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0e1420}
-  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:99px;border:none;
-    background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:12px;line-height:1;padding:0}
-  .thumb .idx{position:absolute;bottom:2px;left:4px;font-size:10px;color:#fff;text-shadow:0 1px 3px #000}
-  label.field{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;font-weight:600}
-  textarea,input[type=text],input[type=number],input[type=password],select{
-    width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);
-    padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
-  textarea{resize:vertical;min-height:78px}
-  textarea:focus,input:focus,select:focus{border-color:var(--accent)}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{background:#0e1420;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;
-    color:var(--muted);cursor:pointer}
-  .chip:hover{border-color:var(--accent);color:var(--text)}
-  .btn{width:100%;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;
-    background:linear-gradient(135deg,var(--accent),#ff3d81);color:#fff;margin-top:14px}
-  .btn:disabled{opacity:.55;cursor:not-allowed}
-  .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-weight:600;margin-top:0}
-  .btn.sm{padding:7px 12px;width:auto;font-size:12px;margin:0}
-  .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .out{min-height:340px;border:1px solid var(--line);border-radius:12px;background:#0e1420;
-    display:grid;place-items:center;overflow:hidden;padding:10px}
-  .out img{max-width:100%;max-height:560px;border-radius:8px;display:block}
-  .out .ph{color:var(--muted);text-align:center;font-size:13px;padding:30px 16px}
-  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);padding:3px 0}
-  .kv b{color:var(--text);font-weight:600}
-  .hist{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
-  .hist img{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
-  .hist img:hover{border-color:var(--accent)}
-  .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px;white-space:pre-wrap}
-  .status.err{color:#ff9b9b}
-  .hidden{display:none!important}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
-  pre.api{background:#0e1420;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;
-    max-height:280px;font-size:11.5px;color:#9fb3cc}
-  .safety{font-size:11.5px;color:var(--muted);margin-top:8px}
-  .safety.blocked{color:#ff9b9b;font-weight:600}
-  .flex-end{display:flex;justify-content:flex-end}
-  .split{display:flex;gap:8px}
-  .split>*{flex:1}
-  .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
-  .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
-  .toggle input{width:16px;height:16px;accent-color:var(--accent)}
-  .gen-form .fld{margin-bottom:10px}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:18px 14px 60px;max-width:820px;margin:0 auto}
+  h1{font-size:19px;margin:0 0 4px;letter-spacing:-.2px}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:18px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .chip{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    padding:8px 13px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--blue2);color:#fff}
+  .chip.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:15px;margin-bottom:14px}
+  .lbl{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--dim);
+    margin-bottom:7px;font-weight:700}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:10px;padding:11px;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+    resize:vertical}
+  textarea:focus{outline:none;border-color:var(--blue2)}
+  .out{background:#080e1a;border:1px solid var(--blue);border-radius:10px;padding:13px;
+    font:13.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#dbe7ff;white-space:pre-wrap;
+    word-break:break-word}
+  .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:11px}
+  button.go{background:var(--blue);border:0;color:#fff;font-weight:700;font-size:14px;
+    padding:11px 20px;border-radius:10px;cursor:pointer}
+  button.go:active{transform:translateY(1px)}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);
+    padding:10px 15px;border-radius:10px;cursor:pointer;font-size:13px}
+  button.ghost:hover{color:#fff;border-color:var(--blue2)}
+  .stat{font-size:13px;color:var(--good);min-height:20px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  td:first-child{color:var(--dim);width:38%;padding-right:12px}
+  tr:last-child td{border-bottom:0}
+  .note{font-size:13px;color:var(--warn);margin-top:11px;padding-left:11px;
+    border-left:3px solid var(--warn);line-height:1.5}
+  .fix{font-size:13.5px;padding:9px 0;border-bottom:1px solid var(--line);display:flex;gap:11px}
+  .fix:last-child{border-bottom:0}
+  .fix b{color:var(--bad);flex:0 0 42%;font-weight:600}
+  .fix span{color:var(--dim)}
+  .hint{font-size:12.5px;color:var(--dim);margin-top:9px}
+  .formula{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .formula span{font-size:11.5px;background:var(--panel2);border:1px solid var(--line);
+    padding:5px 10px;border-radius:7px;color:var(--dim)}
+  .formula span b{color:var(--blue2);font-weight:700}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header class="top">
-    <div class="brand">
-      <div class="logo">🪄</div>
-      <div>
-        <div>Qwen Image Edit Studio</div>
-        <div style="font-size:11.5px;color:var(--muted);font-weight:500">Your personal prompt-driven image editor · powered by Hugging Face Spaces</div>
-      </div>
-    </div>
-    <div class="inline">
-      <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
-    </div>
-  </header>
+<h1>Image Edit Prompt Card</h1>
+<div class="sub">Qwen-Image-Edit 2511 · paste the result into the Hugging Face Space's Instruction box</div>
 
-  <nav class="tabs">
-    <button class="tab active" data-tab="lora">LoRA Editor</button>
-    <button class="tab" data-tab="custom">Custom Space</button>
-    <button class="tab" data-tab="settings">Settings</button>
-  </nav>
-
-  <!-- ============ TAB 1: LoRA Editor ============ -->
-  <section id="tab-lora">
-    <div class="grid">
-      <!-- LEFT: inputs -->
-      <div>
-        <div class="card">
-          <h3 style="display:flex;align-items:center">Qwen-Image-Edit<span class="badge" id="stepBadge">4-Step Fast</span></h3>
-          <div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">AIO · prompt-driven image editing · 19 LoRA adapters</div>
-
-          <div class="note">
-            By using this tool you agree to comply with the
-            <a href="https://huggingface.co/content-policy" target="_blank" rel="noopener">Hugging&nbsp;Face Content Policy</a>.
-            You are solely responsible for any images generated. The author assumes no liability for user-generated outputs.
-          </div>
-
-          <label class="field">Upload image(s) — select several at once, drag-n-drop, or paste (Ctrl/⌘+V)</label>
-          <div class="drop" id="drop">
-            <div class="big">⬆</div>
-            <div><b>Drop files here</b></div>
-            <div class="sub">— or —</div>
-            <div class="sub">Click to upload</div>
-          </div>
-          <input type="file" id="fileInput" accept="image/*" multiple class="hidden" />
-
-          <label class="field" style="margin-top:14px">📋 Paste image here (Ctrl+V) — or click the clipboard icon</label>
-          <div class="drop" id="pasteZone" tabindex="0">
-            <div class="big">📋</div>
-            <div><b>Paste from Clipboard</b></div>
-            <div class="sub">focus this box and press Ctrl/⌘+V</div>
-          </div>
-
-          <div class="thumbs" id="thumbs"></div>
-
-          <label class="field" for="prompt">Prompt</label>
-          <textarea id="prompt" placeholder="e.g. Transform into anime. / Rotate the camera 45 degrees to the right. / Apply the lighting from image 2 to image 1."></textarea>
-          <div class="chips" id="promptChips"></div>
-
-          <label class="field" for="lora">LoRA adapter</label>
-          <select id="lora"></select>
-
-          <div class="row">
-            <div>
-              <label class="field" for="steps">Steps</label>
-              <input type="number" id="steps" value="4" min="1" max="50" />
-            </div>
-            <div>
-              <label class="field" for="guidance">Guidance scale</label>
-              <input type="number" id="guidance" value="4" min="0" max="20" step="0.5" />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label class="field" for="seed">Seed</label>
-              <input type="number" id="seed" value="0" min="0" />
-            </div>
-            <div class="toggle" style="margin-top:26px">
-              <input type="checkbox" id="randomize" /> <label for="randomize" style="margin:0">Randomize seed</label>
-            </div>
-          </div>
-
-          <button class="btn" id="generate">✨ Generate</button>
-          <div class="split" style="margin-top:8px">
-            <button class="btn secondary sm" id="clearAll" style="width:100%">Clear images</button>
-            <button class="btn secondary sm" id="checkSafety" style="width:100%">Run safety check</button>
-          </div>
-          <div class="status" id="status"></div>
-        </div>
-      </div>
-
-      <!-- RIGHT: output -->
-      <div>
-        <div class="card">
-          <h3>Result</h3>
-          <div class="out" id="out">
-            <div class="ph">Drop or paste an image, write a prompt, then hit Generate.<br /><br />
-              First run may take 30–60 s while the Space wakes up.</div>
-          </div>
-          <div style="margin-top:10px">
-            <div class="kv"><span>Seed used</span><b id="metaSeed">—</b></div>
-            <div class="kv"><span>LoRA</span><b id="metaLora">—</b></div>
-            <div class="kv"><span>Time</span><b id="metaTime">—</b></div>
-          </div>
-          <div class="split" style="margin-top:10px">
-            <button class="btn secondary sm" id="useAsInput" style="width:100%">↩ Use as input</button>
-            <button class="btn secondary sm" id="saveResult" style="width:100%">⤓ Save PNG</button>
-          </div>
-          <div class="hint" id="saveHint"></div>
-        </div>
-        <div class="card">
-          <h3>Session history</h3>
-          <div class="hist" id="hist"><span class="hint">No results yet.</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TAB 2: Custom Space ============ -->
-  <section id="tab-custom" class="hidden">
-    <div class="grid">
-      <div>
-        <div class="card">
-          <h3>Any image-editing Space</h3>
-          <div class="hint" style="margin-bottom:10px">
-            Connect to any public Gradio-based Space. The form below is generated from that Space's own API,
-            so it adapts to whatever inputs it declares.
-          </div>
-
-          <label class="field" for="customSpace">Space ID</label>
-          <input type="text" id="customSpace" value="selfit-camera/Omni-Image-Editor" />
-          <div class="chips" id="spacePresets"></div>
-
-          <div class="inline" style="margin-top:12px">
-            <button class="btn secondary sm" id="connectCustom">Connect</button>
-            <button class="btn secondary sm" id="inspectApi">Inspect API</button>
-            <span class="status" id="customStatus" style="margin:0"></span>
-          </div>
-
-          <label class="field" for="endpoint" style="margin-top:14px">Endpoint</label>
-          <select id="endpoint"><option value="">— connect to list endpoints —</option></select>
-
-          <div id="genForm" class="gen-form" style="margin-top:12px"></div>
-          <button class="btn" id="runCustom">▶ Run</button>
-          <div class="status" id="customRunStatus"></div>
-        </div>
-      </div>
-      <div>
-        <div class="card">
-          <h3>API details</h3>
-          <pre class="api" id="apiDump">Not inspected yet.</pre>
-        </div>
-        <div class="card">
-          <h3>Result</h3>
-          <div class="out" id="customOut"><div class="ph">Nothing yet.</div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TAB 3: Settings ============ -->
-  <section id="tab-settings" class="hidden">
-    <div class="card" style="max-width:720px">
-      <h3>Connection</h3>
-      <label class="field" for="spaceId">Default Space (LoRA Editor)</label>
-      <input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast" />
-      <div class="hint">The app calls this Space's <span class="mono">/edit_image</span> endpoint directly from your browser.</div>
-
-      <label class="field" for="token">Hugging Face token (optional)</label>
-      <input type="password" id="token" placeholder="hf_..." autocomplete="off" />
-      <div class="hint">
-        Optional. A read token can raise your queue priority and lets you use private Spaces.
-        It is kept in memory for this session only — never stored or sent anywhere except Hugging Face.
-      </div>
-
-      <div class="inline" style="margin-top:14px">
-        <button class="btn secondary sm" id="applySettings">Apply &amp; connect</button>
-        <button class="btn secondary sm" id="disconnect">Disconnect</button>
-      </div>
-      <div class="status" id="settingsStatus"></div>
-
-      <h3 style="margin-top:22px">Notes &amp; limits</h3>
-      <div class="hint">
-        • Free Spaces sleep when idle; the first request can take 30–60 s to wake and will queue under load.<br />
-        • Images are sent to the Space as base64 JSON, so nothing is uploaded to a third party of your own.<br />
-        • <b>Save PNG</b> may be blocked when this page runs inside a sandboxed preview iframe — open the file directly in your browser (or host it) and it works normally.<br />
-        • The Space applies a content filter (NCII guard); blocked prompts return a message instead of an image.<br />
-        • Some Spaces expose a plain <span class="mono">/predict</span> endpoint instead of named ones — use the Custom Space tab for those.
-      </div>
-    </div>
-  </section>
+<div class="formula">
+  <span><b>1</b> Operation</span><span><b>2</b> Target</span>
+  <span><b>3</b> Specification</span><span><b>4</b> Preservation</span>
 </div>
 
-<script type="module">
-import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+<div class="chips" id="chips"></div>
 
-/* ------------------------------------------------------------------ *
- *  Config
- * ------------------------------------------------------------------ */
-const LORAS = [
-  "Multiple-Angles","Photo-to-Anime","Anime-V2","Light-Migration","Upscaler",
-  "Style-Transfer","Manga-Tone","Anything2Real","Fal-Multiple-Angles","Polaroid-Photo",
-  "Unblur-Anything","Midnight-Noir-Eyes-Spotlight","Hyper-Realistic-Portrait",
-  "Ultra-Realistic-Portrait","Pixar-Inspired-3D","Noir-Comic-Book","Any-light",
-  "Studio-DeLight","Cinematic-FlatLog"
-];
+<div class="card">
+  <div class="lbl">What should change &nbsp;(1–3)</div>
+  <textarea id="change" rows="4"></textarea>
+</div>
 
-const PROMPT_PRESETS = [
-  { lora:"Photo-to-Anime",            prompt:"Transform into anime." },
-  { lora:"Multiple-Angles",           prompt:"Rotate the camera 45 degrees to the right." },
-  { lora:"Fal-Multiple-Angles",       prompt:"Front-right quarter view." },
-  { lora:"Upscaler",                  prompt:"Upscale this picture to 4K resolution." },
-  { lora:"Unblur-Anything",           prompt:"Unblur and upscale." },
-  { lora:"Pixar-Inspired-3D",         prompt:"Transform it into Pixar-inspired 3D." },
-  { lora:"Hyper-Realistic-Portrait",  prompt:"Transform into a hyper-realistic face portrait." },
-  { lora:"Studio-DeLight",            prompt:"Neutral uniform lighting. Preserve identity and composition." },
-  { lora:"Cinematic-FlatLog",         prompt:"Transform into a cinematic flat log." },
-  { lora:"Any-light",                 prompt:"Apply the lighting from image 2 to image 1." },
-  { lora:"Light-Migration",           prompt:"Refer to the color tone, remove the original lighting from Image 1, and relight Image 1 based on the lighting and color tone of Image 2." },
-  { lora:"Style-Transfer",            prompt:"Convert Image 1 to the style of Image 2." },
-  { lora:"Anything2Real",             prompt:"Change the picture to realistic photograph." },
-  { lora:"Polaroid-Photo",            prompt:"cinematic polaroid with soft grain subtle vignette gentle lighting white frame handwritten photographed preserving realistic texture and details." },
-  { lora:"Noir-Comic-Book",           prompt:"Transform into a noir comic book style." },
-  { lora:"Manga-Tone",                prompt:"Paint with manga tone." },
-];
+<div class="card">
+  <div class="lbl">What must stay identical &nbsp;(4 — the part everyone skips)</div>
+  <textarea id="preserve" rows="3"></textarea>
+  <div class="hint">Leave this blank only for a style pass. Blank here is why rooms get rebuilt.</div>
+</div>
 
-const SPACE_PRESETS = [
-  "selfit-camera/Omni-Image-Editor",
-  "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
-  "linoyts/Qwen-Image-Edit-Angles",
-  "Qwen/Qwen-Image-Edit",
-  "prithivMLmods/Qwen-Image-Edit-2509-LoRAs-Fast",
-  "multimodalart/Qwen-Image-Edit-Fast",
-  "linoyts/Qwen-Image-Edit-Inpaint",
-  "fffiloni/diffusers-image-outpaint"
-];
+<div class="card">
+  <div class="lbl">Paste this into the Instruction box</div>
+  <div class="out" id="out">Pick an operation above…</div>
+  <div class="row">
+    <button class="go" id="copy">Copy instruction</button>
+    <button class="ghost" id="clear">Clear</button>
+    <span class="stat" id="stat"></span>
+  </div>
+</div>
 
-/* ------------------------------------------------------------------ *
- *  State (in-memory only — no localStorage in sandboxed previews)
- * ------------------------------------------------------------------ */
-const S = {
-  loraClient: null,
-  loraSpaceId: "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
-  customClient: null,
-  customSpaceId: null,
-  apiInfo: null,
-  token: "",
-  images: [],          // { id, name, dataUrl }
-  lastResult: null,
-  history: [],
-  busy: false,
-  imgSeq: 1
+<div class="card">
+  <div class="lbl">Settings for this operation</div>
+  <table id="settings"></table>
+  <div class="note" id="note"></div>
+</div>
+
+<div class="card">
+  <div class="lbl">When it goes wrong — read the symptom, not the model</div>
+  <div class="fix"><b>"Edit didn't apply"</b><span>Your prompt was a description, not an instruction. Add an imperative verb: make / change / remove / replace / transform.</span></div>
+  <div class="fix"><b>Whole room replaced</b><span>You named an object that isn't in the photo ("bed"), or you skipped part 4. Anchor to something visible, then state what stays.</span></div>
+  <div class="fix"><b>Face is a different person</b><span>Too aggressive a structural pass. Split it: pose first, beauty second. Add <em>different person, changed face</em> to any negative field.</span></div>
+  <div class="fix"><b>Confetti, sparkles, glitter streaks</b><span>A style LoRA bleeding into a structural edit. Set LoRA to neutral for pass 1; add <em>sparkles, confetti, glitch artifacts</em> to negatives.</span></div>
+  <div class="fix"><b>Hands or chair look melted</b><span>Normal for a hard pose change at 1024px and 4 steps. Seed-hunt 3–4 runs, then Upscaler pass.</span></div>
+</div>
+
+<script>
+var PRESETS = {
+  chair: {
+    label: "Sit on the chair already there",
+    change: "Change her pose from standing to sitting on one of the wooden chairs to her right. Seated naturally, back supported, hands resting in her lap, saree folds draping naturally over her knees.",
+    preserve: "Keep her face, expression, saree colours and pattern, the pink balloons, the stage, the tiled floor and the existing lighting exactly as in the original.",
+    lora: "Most neutral option in the dropdown",
+    steps: "4-STEP FAST is enough for pose",
+    seed: "Randomize ON",
+    runs: "3–4 runs, keep the best",
+    note: "This is the corrected version of \"Make her sit on bed\". The chair exists in your photo, so nothing has to be invented — the hall survives."
+  },
+  bed: {
+    label: "Sit on a bed (new room)",
+    change: "Make her sit on the edge of a bed in a bedroom, seated naturally with her hands in her lap.",
+    preserve: "Keep her face, expression and saree exactly as in the original.",
+    lora: "Neutral for pose, Hyper-Realistic-Portrait as pass 2",
+    steps: "4-STEP FAST, then add the LoRA",
+    seed: "Randomize ON",
+    runs: "3–4 runs",
+    note: "Naming a room the photo doesn't contain hands the model the whole set. Expect the hall to disappear — that is the instruction working, not failing."
+  },
+  angle: {
+    label: "Different camera angle",
+    change: "Rotate the camera 45 degrees to the right.",
+    preserve: "Keep her face, expression, clothing and the room background unchanged.",
+    lora: "Multiple-Angles, or Fal-Multiple-Angles",
+    steps: "4-STEP FAST",
+    seed: "Randomize ON",
+    runs: "2–3 runs",
+    note: "The Multiple-Angles LoRAs are built for exactly this; they hold identity better than a bare rotation prompt."
+  },
+  beauty: {
+    label: "Hyper-real detail pass",
+    change: "Transform into a hyper-realistic face portrait.",
+    preserve: "",
+    lora: "Hyper-Realistic-Portrait",
+    steps: "4-STEP FAST",
+    seed: "Randomize ON",
+    runs: "2–3 runs",
+    note: "This is the Space's own bundled prompt for this LoRA. Run it on an already-winning structural result — it beautifies, it does not re-pose."
+  },
+  upscale: {
+    label: "Upscale / 2K detail",
+    change: "Upscale this image to 2K and restore fine detail in the fabric and skin.",
+    preserve: "Keep the composition, pose and colours identical.",
+    lora: "Upscaler (Upscale2K) or Unblur-Anything",
+    steps: "4-STEP FAST",
+    seed: "Randomize ON",
+    runs: "1–2 runs",
+    note: "Run this last. The base edit renders at a 1024px longest side, so fine saree pattern needs this pass to hold up."
+  },
+  remove: {
+    label: "Remove an object",
+    change: "Remove the [object] from the scene. Fill the empty area with matching [floor / wall / background].",
+    preserve: "Preserve all other elements, lighting direction, shadow patterns and overall composition exactly as in the original.",
+    lora: "Neutral, or Style-Transfer only if you want a look",
+    steps: "4-STEP FAST",
+    seed: "Randomize ON",
+    runs: "2–3 runs",
+    note: "Replace the bracketed words with a real description — \"the speaker on the left\", \"the pink balloon cluster\"."
+  },
+  background: {
+    label: "Change the background",
+    change: "Change the background to [a plain studio wall / a garden at golden hour / etc.].",
+    preserve: "Keep her exactly as she is — same face, expression, pose and saree — and keep the lighting on her consistent with the original.",
+    lora: "Neutral",
+    steps: "4-STEP FAST",
+    seed: "Randomize ON",
+    runs: "2–3 runs",
+    note: "Background swaps are where lighting mismatches show. Naming a light direction keeps her from looking pasted on."
+  }
 };
 
-/* ------------------------------------------------------------------ *
- *  DOM helpers
- * ------------------------------------------------------------------ */
-const $ = (id) => document.getElementById(id);
-const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
+var cur = null;
+var chips = document.getElementById('chips');
+var elChange = document.getElementById('change');
+var elPres = document.getElementById('preserve');
+var elOut = document.getElementById('out');
+var elSet = document.getElementById('settings');
+var elNote = document.getElementById('note');
+var elStat = document.getElementById('stat');
 
-function setStatus(node, msg, isErr) {
-  node.textContent = msg || "";
-  node.classList.toggle("err", !!isErr);
-}
-
-function setConn(text, kind) {
-  $("connText").textContent = text;
-  const p = $("connPill");
-  p.className = "pill" + (kind ? " " + kind : "");
-}
-
-/* ------------------------------------------------------------------ *
- *  Tabs
- * ------------------------------------------------------------------ */
-document.querySelectorAll(".tab").forEach((t) => {
-  t.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
-    ["lora","custom","settings"].forEach((k) => $("tab-" + k).classList.toggle("hidden", k !== t.dataset.tab));
-  });
+Object.keys(PRESETS).forEach(function(k){
+  var b = document.createElement('button');
+  b.className = 'chip';
+  b.textContent = PRESETS[k].label;
+  b.dataset.k = k;
+  b.onclick = function(){ load(k); };
+  chips.appendChild(b);
 });
 
-/* ------------------------------------------------------------------ *
- *  Populate LoRA select + prompt chips + space presets
- * ------------------------------------------------------------------ */
-const loraSel = $("lora");
-LORAS.forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; loraSel.appendChild(o); });
-loraSel.value = "Photo-to-Anime";
-
-const chipBox = $("promptChips");
-PROMPT_PRESETS.forEach((p) => {
-  const c = el("span", "chip", p.prompt.length > 42 ? p.prompt.slice(0, 40) + "…" : p.prompt);
-  c.title = p.prompt;
-  c.addEventListener("click", () => {
-    $("prompt").value = p.prompt;
-    if (LORAS.includes(p.lora)) loraSel.value = p.lora;
-  });
-  chipBox.appendChild(c);
-});
-
-const presetBox = $("spacePresets");
-SPACE_PRESETS.forEach((id) => {
-  const c = el("span", "chip", id.split("/")[1] || id);
-  c.title = id;
-  c.addEventListener("click", () => { $("customSpace").value = id; });
-  presetBox.appendChild(c);
-});
-
-/* ------------------------------------------------------------------ *
- *  Image intake: file picker, drag & drop, clipboard paste
- * ------------------------------------------------------------------ */
-const fileInput = $("fileInput");
-const drop = $("drop");
-
-drop.addEventListener("click", () => fileInput.click());
-fileInput.addEventListener("change", () => { addFiles([...fileInput.files]); fileInput.value = ""; });
-
-["dragenter","dragover"].forEach((ev) =>
-  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); })
-);
-["dragleave","dragend"].forEach((ev) =>
-  drop.addEventListener(ev, () => drop.classList.remove("over"))
-);
-drop.addEventListener("drop", (e) => {
-  e.preventDefault(); drop.classList.remove("over");
-  addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/")));
-});
-
-// Paste anywhere in the page
-document.addEventListener("paste", (e) => {
-  const items = [...(e.clipboardData?.items || [])];
-  const files = items.filter((i) => i.type.startsWith("image/")).map((i) => i.getAsFile()).filter(Boolean);
-  if (files.length) { e.preventDefault(); addFiles(files); }
-});
-// Paste when the paste zone is focused (explicit affordance from the HF UI)
-$("pasteZone").addEventListener("paste", (e) => {
-  const files = [...(e.clipboardData?.items || [])]
-    .filter((i) => i.type.startsWith("image/"))
-    .map((i) => i.getAsFile()).filter(Boolean);
-  if (files.length) { e.preventDefault(); addFiles(files); }
-});
-
-function addFiles(files) {
-  let pending = files.length;
-  if (!pending) return;
-  files.forEach((f) => {
-    const r = new FileReader();
-    r.onload = () => {
-      S.images.push({ id: S.imgSeq++, name: f.name || `pasted-${S.imgSeq}.png`, dataUrl: r.result });
-      renderThumbs();
-      if (--pending === 0) setStatus($("status"), `${S.images.length} image(s) ready.`);
-    };
-    r.onerror = () => { if (--pending === 0) renderThumbs(); };
-    r.readAsDataURL(f);
-  });
-}
-
-function renderThumbs() {
-  const box = $("thumbs");
-  box.innerHTML = "";
-  S.images.forEach((im, i) => {
-    const t = el("div", "thumb");
-    const img = el("img"); img.src = im.dataUrl; img.alt = im.name;
-    const rm = el("button", null, "×");
-    rm.title = "Remove";
-    rm.addEventListener("click", () => { S.images = S.images.filter((x) => x.id !== im.id); renderThumbs(); });
-    const idx = el("span", "idx", "img" + (i + 1));
-    t.append(img, rm, idx);
-    box.appendChild(t);
-  });
-  if (S.images.length > 1) {
-    const hint = el("div", "hint", "Order matters: “image 1”, “image 2” in your prompt refer to these.");
-    hint.style.width = "100%";
-    box.appendChild(hint);
+function load(k){
+  cur = k;
+  var p = PRESETS[k];
+  var all = chips.querySelectorAll('.chip');
+  for (var i=0;i<all.length;i++){
+    all[i].classList.toggle('on', all[i].dataset.k === k);
   }
+  elChange.value = p.change;
+  elPres.value = p.preserve;
+  elSet.innerHTML =
+    '<tr><td>Style / LoRA</td><td>' + esc(p.lora) + '</td></tr>' +
+    '<tr><td>Steps</td><td>' + esc(p.steps) + '</td></tr>' +
+    '<tr><td>Seed</td><td>' + esc(p.seed) + '</td></tr>' +
+    '<tr><td>Expected runs</td><td>' + esc(p.runs) + '</td></tr>';
+  elNote.textContent = p.note;
+  compose();
 }
 
-$("clearAll").addEventListener("click", () => { S.images = []; renderThumbs(); setStatus($("status"), ""); });
-
-/* ------------------------------------------------------------------ *
- *  Connection
- * ------------------------------------------------------------------ */
-function statusCallback(label) {
-  return (st) => {
-    // Defensive: the callback shape has changed across client versions.
-    let stage = "";
-    try {
-      stage = st?.status?.stage || st?.stage || "";
-    } catch (_) { stage = ""; }
-    if (stage) setStatus($(label), `Space status: ${stage}…`);
-  };
+function compose(){
+  var c = elChange.value.trim();
+  var p = elPres.value.trim();
+  var text = p ? (c + ' ' + p) : c;
+  elOut.textContent = text || 'Pick an operation above…';
+  elStat.textContent = '';
 }
 
-async function connectLora(spaceId, token) {
-  setConn("Connecting…", "busy");
-  setStatus($("status"), `Connecting to ${spaceId}… (a sleeping Space can take ~30–60 s to start)`);
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function reset(){
+  cur = null;
+  var all = chips.querySelectorAll('.chip');
+  for (var i=0;i<all.length;i++){ all[i].classList.remove('on'); }
+  elChange.value = '';
+  elPres.value = '';
+  elSet.innerHTML = '<tr><td>—</td><td>Choose an operation above</td></tr>';
+  elNote.textContent = '';
+  compose();
+}
+
+elChange.addEventListener('input', compose);
+elPres.addEventListener('input', compose);
+
+document.getElementById('copy').onclick = function(){
+  var t = elOut.textContent;
+  if (!t || t === 'Pick an operation above…'){ elStat.textContent = 'Nothing to copy yet'; return; }
   try {
-    const opts = { status_callback: statusCallback("status") };
-    if (token && token.startsWith("hf_")) opts.token = token;
-    S.loraClient = await Client.connect(spaceId, opts);
-    S.loraSpaceId = spaceId;
-    setConn("Connected: " + spaceId.split("/")[1], "ok");
-    setStatus($("status"), "Connected. Ready to edit.");
-    return true;
-  } catch (e) {
-    S.loraClient = null;
-    setConn("Connection failed", "err");
-    setStatus($("status"),
-      "Could not connect: " + (e?.message || e) +
-      "\n\nIf this is a network/CORS block in a sandboxed preview, download this file and open it directly in your browser.", true);
-    return false;
-  }
-}
-
-/* ------------------------------------------------------------------ *
- *  Main generate flow (exact schema of the LoRAs-Fast Space)
- * ------------------------------------------------------------------ */
-function payloadFor() {
-  const prompt = $("prompt").value.trim();
-  return {
-    images_b64_json: JSON.stringify(S.images.map((i) => i.dataUrl)),
-    prompt,
-    lora_adapter: loraSel.value,
-    seed: Math.max(0, parseInt($("seed").value, 10) || 0),
-    randomize_seed: $("randomize").checked,
-    guidance_scale: parseFloat($("guidance").value) || 4,
-    steps: Math.max(1, parseInt($("steps").value, 10) || 4)
-  };
-}
-
-$("generate").addEventListener("click", async () => {
-  if (S.busy) return;
-  if (!S.images.length) { setStatus($("status"), "Add at least one image first (drop, upload, or paste).", true); return; }
-  const payload = payloadFor();
-  if (!payload.prompt) { setStatus($("status"), "Write a prompt describing the edit.", true); return; }
-
-  if (!S.loraClient) {
-    const ok = await connectLora(S.loraSpaceId, S.token);
-    if (!ok) return;
-  }
-
-  S.busy = true;
-  $("generate").disabled = true;
-  setConn("Generating…", "busy");
-  setStatus($("status"), "Queued — waiting for the Space…");
-  const t0 = Date.now();
-
-  try {
-    // Optional pre-flight safety check (pure CPU on the Space, no GPU queue)
-    if ($("checkSafety").dataset.auto === "1") await safetyCheck(payload.prompt, false);
-
-    const job = S.loraClient.submit("/edit_image", payload);
-    let out = null;
-    for await (const m of job) {
-      if (m.type === "status") {
-        const pos = m.position != null ? `queue position ${m.position}` : "queued";
-        const eta = m.eta != null ? ` · ETA ${Math.round(m.eta)}s` : "";
-        setStatus($("status"), `Running — ${pos}${eta}`);
-      } else if (m.type === "data") {
-        out = m.data;
-      }
-    }
-
-    const data = Array.isArray(out) ? out[0] : out;
-    if (!data) throw new Error("No response payload from the Space.");
-    if (data.status === "blocked") {
-      setStatus($("status"), data.message || "Prompt blocked by the content filter.", true);
-      return;
-    }
-    if (!data.image) throw new Error(data.message || "The Space returned no image.");
-
-    showResult(data.image, payload, Date.now() - t0);
-    setStatus($("status"), "Done.");
-  } catch (e) {
-    setStatus($("status"),
-      "Generation failed: " + (e?.message || e) +
-      "\n\nTip: the Space may have been restarted or is rate-limiting anonymous traffic. Retry, or add a Hugging Face token in Settings.", true);
-  } finally {
-    S.busy = false;
-    $("generate").disabled = false;
-    setConn("Connected: " + S.loraSpaceId.split("/")[1], "ok");
-  }
-});
-
-async function safetyCheck(prompt, loud = true) {
-  if (!S.loraClient) { if (loud) setStatus($("status"), "Not connected yet.", true); return null; }
-  try {
-    const res = await S.loraClient.predict("/check_safety", { prompt });
-    const d = Array.isArray(res.data) ? res.data[0] : res.data;
-    if (loud) setStatus($("status"), d?.status === "blocked" ? ("⛔ " + d.message) : "✅ Prompt passed the content filter.", d?.status === "blocked");
-    return d;
-  } catch (e) {
-    if (loud) setStatus($("status"), "Safety check unavailable: " + (e?.message || e), true);
-    return null;
-  }
-}
-
-$("checkSafety").addEventListener("click", () => safetyCheck($("prompt").value.trim(), true));
-// Enable the automatic pre-flight check after the user has used it once
-$("checkSafety").dataset.auto = "0";
-
-function showResult(dataUrl, payload, ms) {
-  const out = $("out");
-  out.innerHTML = "";
-  const img = el("img"); img.src = dataUrl; img.alt = "edited result";
-  out.appendChild(img);
-  S.lastResult = dataUrl;
-
-  $("metaSeed").textContent = payload.randomize_seed ? "(randomized)" : String(payload.seed);
-  $("metaLora").textContent = payload.lora_adapter;
-  $("metaTime").textContent = (ms / 1000).toFixed(1) + "s";
-
-  S.history.unshift({ dataUrl, prompt: payload.prompt, lora: payload.lora_adapter });
-  if (S.history.length > 24) S.history.pop();
-  renderHistory();
-}
-
-function renderHistory() {
-  const box = $("hist");
-  box.innerHTML = "";
-  if (!S.history.length) { box.appendChild(el("span", "hint", "No results yet.")); return; }
-  S.history.forEach((h) => {
-    const img = el("img"); img.src = h.dataUrl; img.title = h.lora + " · " + h.prompt;
-    img.addEventListener("click", () => {
-      $("out").innerHTML = ""; const big = el("img"); big.src = h.dataUrl; $("out").appendChild(big);
-      S.lastResult = h.dataUrl; $("metaLora").textContent = h.lora;
+    navigator.clipboard.writeText(t).then(function(){
+      elStat.textContent = 'Copied — paste into the Instruction box';
+    }, function(){
+      elStat.textContent = 'Copy blocked — select the text above manually';
     });
-    box.appendChild(img);
-  });
-}
-
-$("useAsInput").addEventListener("click", () => {
-  if (!S.lastResult) return;
-  S.images.push({ id: S.imgSeq++, name: "result.png", dataUrl: S.lastResult });
-  renderThumbs();
-});
-
-$("saveResult").addEventListener("click", () => {
-  if (!S.lastResult) return;
-  try {
-    const a = document.createElement("a");
-    a.href = S.lastResult;
-    a.download = `qwen-edit-${Date.now()}.png`;
-    document.body.appendChild(a); a.click(); a.remove();
-    $("saveHint").textContent = "";
   } catch (e) {
-    $("saveHint").textContent = "Download blocked in this preview — open the page directly in a browser to save.";
+    elStat.textContent = 'Select the text above and copy manually';
   }
-});
+};
 
-$("steps").addEventListener("input", () => {
-  const v = parseInt($("steps").value, 10) || 0;
-  $("stepBadge").textContent = v <= 8 ? v + "-Step Fast" : v + " steps";
-});
+document.getElementById('clear').onclick = reset;
 
-/* ------------------------------------------------------------------ *
- *  Settings tab
- * ------------------------------------------------------------------ */
-$("applySettings").addEventListener("click", async () => {
-  S.token = $("token").value.trim();
-  const sid = $("spaceId").value.trim();
-  if (!sid) { setStatus($("settingsStatus"), "Enter a Space ID.", true); return; }
-  setStatus($("settingsStatus"), "Applying…");
-  const ok = await connectLora(sid, S.token);
-  setStatus($("settingsStatus"), ok ? "Connected as " + sid : "Failed — see status under the editor.", !ok);
-});
-
-$("disconnect").addEventListener("click", () => {
-  S.loraClient = null;
-  setConn("Not connected");
-  setStatus($("settingsStatus"), "Disconnected.");
-});
-
-/* ------------------------------------------------------------------ *
- *  Custom Space tab — discover the API and build a form from it
- * ------------------------------------------------------------------ */
-function typeOf(p) {
-  const t = String(p?.type ?? "");
-  const c = String(p?.component ?? "");
-  if (/boolean/i.test(t) || /checkbox/i.test(c)) return "boolean";
-  if (/number|integer|float/i.test(t) || /slider|number/i.test(c)) return "number";
-  if (/filepath|PIL|Image/i.test(t) || /^image/i.test(c) || /^file/i.test(c)) return "image";
-  return "string";
-}
-
-const IMG_RE = /image|img|mask|photo|reference|init/i;
-
-function buildForm(params) {
-  const host = $("genForm");
-  host.innerHTML = "";
-  params.forEach((p, i) => {
-    if (p.hidden) return;
-    const name = p.parameter_name || ("arg" + i);
-    const isImage = typeOf(p) === "image" || IMG_RE.test(name);
-    const fld = el("div", "fld");
-    const lab = el("label", "field", (p.label || name) + "  ·  " + (p.type || "any"));
-    lab.htmlFor = "cf_" + name;
-    fld.appendChild(lab);
-
-    let input;
-    if (isImage) {
-      input = el("input"); input.type = "file"; input.accept = "image/*";
-      input.multiple = true; input.id = "cf_" + name; input.dataset.kind = "image"; input.dataset.name = name;
-      if (Array.isArray(p.parameter_default)) input.multiple = true;
-    } else if (typeOf(p) === "boolean") {
-      input = el("input"); input.type = "checkbox"; input.id = "cf_" + name;
-      input.dataset.kind = "boolean"; input.dataset.name = name;
-      if (p.parameter_default) input.checked = true;
-      lab.textContent = "";
-      const wrap = el("label", "toggle");
-      wrap.append(input, document.createTextNode(" " + (p.label || name)));
-      fld.appendChild(wrap);
-      host.appendChild(fld);
-      return;
-    } else if (typeOf(p) === "number") {
-      input = el("input"); input.type = "number"; input.step = "any"; input.id = "cf_" + name;
-      input.dataset.kind = "number"; input.dataset.name = name;
-      if (p.parameter_default != null) input.value = p.parameter_default;
-    } else {
-      const long = /prompt|instruction|caption|text/i.test(name);
-      input = long ? document.createElement("textarea") : el("input");
-      if (!long) input.type = "text";
-      input.id = "cf_" + name; input.dataset.kind = "string"; input.dataset.name = name;
-      if (p.parameter_default != null && typeof p.parameter_default === "string") input.value = p.parameter_default;
-    }
-    fld.appendChild(input);
-    host.appendChild(fld);
-  });
-}
-
-async function collectForm() {
-  const inputs = [...$("genForm").querySelectorAll("[data-kind]")];
-  const payload = {};
-  for (const inp of inputs) {
-    const k = inp.dataset.kind, name = inp.dataset.name;
-    if (k === "boolean") payload[name] = inp.checked;
-    else if (k === "number") payload[name] = inp.value === "" ? (inp.parameterDefault ?? 0) : parseFloat(inp.value);
-    else if (k === "image") {
-      const files = [...inp.files];
-      const blobs = [];
-      for (const f of files) blobs.push(await toBlobFile(f));
-      payload[name] = blobs.length > 1 ? blobs : (blobs[0] ?? null);
-    } else payload[name] = inp.value;
-  }
-  return payload;
-}
-
-function toBlobFile(file) {
-  return new Promise((resolve) => {
-    const r = new FileReader();
-    r.onload = async () => {
-      try {
-        const resp = await fetch(r.result);
-        const blob = await resp.blob();
-        resolve(new File([blob], file.name || "image.png", { type: blob.type || "image/png" }));
-      } catch (_) { resolve(file); }
-    };
-    r.onerror = () => resolve(file);
-    r.readAsDataURL(file);
-  });
-}
-
-$("inspectApi").addEventListener("click", async () => {
-  const sid = $("customSpace").value.trim();
-  if (!sid) { setStatus($("customStatus"), "Enter a Space ID.", true); return; }
-  setStatus($("customStatus"), "Connecting…");
-  try {
-    const opts = { status_callback: statusCallback("customStatus") };
-    if (S.token && S.token.startsWith("hf_")) opts.token = S.token;
-    S.customClient = await Client.connect(sid, opts);
-    S.customSpaceId = sid;
-    S.apiInfo = await S.customClient.view_api();
-    $("apiDump").textContent = JSON.stringify(S.apiInfo, null, 2);
-
-    const eps = Object.keys(S.apiInfo.named_endpoints || {});
-    const sel = $("endpoint");
-    sel.innerHTML = "";
-    (eps.length ? eps : ["/predict"]).forEach((e) => {
-      const o = el("option"); o.value = e; o.textContent = e; sel.appendChild(o);
-    });
-    if (eps.length) {
-      sel.value = eps[0];
-      buildForm(S.apiInfo.named_endpoints[eps[0]].parameters || []);
-    }
-    setStatus($("customStatus"), `Connected. ${eps.length || 1} endpoint(s) found.`);
-  } catch (e) {
-    setStatus($("customStatus"), "Failed: " + (e?.message || e), true);
-  }
-});
-
-$("connectCustom").addEventListener("click", () => $("inspectApi").click());
-
-$("endpoint").addEventListener("change", () => {
-  const e = $("endpoint").value;
-  const info = S.apiInfo?.named_endpoints?.[e];
-  if (info) buildForm(info.parameters || []);
-});
-
-$("runCustom").addEventListener("click", async () => {
-  if (!S.customClient || !S.apiInfo) { setStatus($("customRunStatus"), "Connect and inspect a Space first.", true); return; }
-  const ep = $("endpoint").value;
-  setStatus($("customRunStatus"), "Running…");
-  $("customOut").innerHTML = '<div class="ph">Working…</div>';
-  try {
-    const payload = await collectForm();
-    const job = S.customClient.submit(ep, payload);
-    let out = null;
-    for await (const m of job) {
-      if (m.type === "status" && m.position != null) setStatus($("customRunStatus"), "Queue position " + m.position);
-      if (m.type === "data") out = m.data;
-    }
-    renderCustomOut(out);
-    setStatus($("customRunStatus"), "Done.");
-  } catch (e) {
-    setStatus($("customRunStatus"), "Failed: " + (e?.message || e), true);
-    $("customOut").innerHTML = '<div class="ph">Error.</div>';
-  }
-});
-
-function renderCustomOut(out) {
-  const box = $("customOut");
-  box.innerHTML = "";
-  const list = Array.isArray(out) ? out : [out];
-  let shown = false;
-  const walk = (v, depth = 0) => {
-    if (depth > 4 || v == null) return;
-    if (typeof v === "string" && /^(https?:|data:image)/.test(v)) {
-      const img = el("img"); img.src = v; img.alt = "result"; box.appendChild(img); shown = true; return;
-    }
-    if (typeof v === "object") {
-      if (v.url || v.path) return walk(String(v.url || v.path), depth + 1);
-      Object.values(v).forEach((x) => walk(x, depth + 1));
-    }
-  };
-  list.forEach((v) => walk(v));
-  if (!shown) {
-    box.innerHTML = "";
-    const pre = el("pre", "api", JSON.stringify(out, null, 2));
-    pre.style.maxHeight = "420px";
-    box.appendChild(pre);
-  }
-}
-
-/* ------------------------------------------------------------------ *
- *  Boot
- * ------------------------------------------------------------------ */
-setStatus($("status"), "Not connected yet — hit Generate and it will connect for you.");
+reset();
 </script>
 </body>
 </html>
