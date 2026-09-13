@@ -1,846 +1,485 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Qwen Image Edit Studio</title>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Qwen Image Edit Studio - Universal Fixed</title>
 <style>
-  :root{
-    --bg:#0b0e14; --panel:#141922; --panel-2:#1a212c; --line:#252d3a;
-    --text:#e6ebf2; --muted:#8b98a9; --accent:#ff7a45; --accent-2:#ffb020;
-    --green:#22c55e; --red:#ef4444; --blue:#5b8def;
-    --radius:14px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
-    font-size:14px;line-height:1.5}
-  a{color:var(--accent-2)}
-  .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
+  :root{--bg:#0b0e14;--panel:#141922;--panel-2:#1a212c;--line:#252d3a;--text:#e6ebf2;--muted:#8b98a9;--accent:#ff7a45;--accent-2:#ffb020;--green:#22c55e;--red:#ef4444;--radius:14px}
+  *{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5}
+  a{color:var(--accent-2)} .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
   header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
-  .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
-    background:linear-gradient(135deg,#ff7a45,#ff3d81);font-size:18px}
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
-    border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
-  .pill .dot{width:8px;height:8px;border-radius:99px;background:var(--muted)}
-  .pill.ok .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
-  .pill.err .dot{background:var(--red)}
-  .pill.busy .dot{background:var(--accent-2);animation:pulse 1s infinite}
+  .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#ff7a45,#ff3d81);font-size:18px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
+  .pill .dot{width:8px;height:8px;border-radius:99px;background:var(--muted)} .pill.ok .dot{background:var(--green)} .pill.err .dot{background:var(--red)} .pill.busy .dot{background:var(--accent-2);animation:pulse 1s infinite}
   @keyframes pulse{50%{opacity:.3}}
   .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
-  .tab{padding:9px 14px;border:1px solid transparent;border-bottom:none;border-radius:10px 10px 0 0;
-    background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600}
+  .tab{padding:9px 14px;border:1px solid transparent;border-bottom:none;border-radius:10px 10px 0 0;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600}
   .tab.active{background:var(--panel);border-color:var(--line);color:var(--text)}
-  .tab:hover{color:var(--text)}
-  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
-  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px} @media(max-width:900px){.grid{grid-template-columns:1fr}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
   .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
-  .badge{display:inline-block;padding:2px 8px;border-radius:6px;background:#1f3a2a;color:#6ee7a0;font-size:11px;font-weight:700;margin-left:8px;vertical-align:middle}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;background:#1f3a2a;color:#6ee7a0;font-size:11px;font-weight:700;margin-left:8px}
   .note{background:#2a1a12;border:1px solid #4a2a18;border-radius:10px;padding:10px 12px;font-size:12px;color:#f0c9a8;margin-bottom:12px}
-  .note b{color:#ffb020}
-  .drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:var(--panel-2);
-    padding:26px 16px;text-align:center;cursor:pointer;transition:.15s;position:relative}
+  .note.green{background:#13271c;border-color:#1f4d2f;color:#b6e9c4}
+  .drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:var(--panel-2);padding:26px 16px;text-align:center;cursor:pointer;transition:.15s}
   .drop:hover,.drop.over{border-color:var(--accent);background:#1c2330}
-  .drop .big{font-size:26px;line-height:1;margin-bottom:8px}
-  .drop .sub{color:var(--muted);font-size:12px;margin-top:4px}
   .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0e1420}
   .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:99px;border:none;
-    background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:12px;line-height:1;padding:0}
+  .thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:99px;border:none;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:12px}
   .thumb .idx{position:absolute;bottom:2px;left:4px;font-size:10px;color:#fff;text-shadow:0 1px 3px #000}
   label.field{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;font-weight:600}
-  textarea,input[type=text],input[type=number],input[type=password],select{
-    width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);
-    padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
-  textarea{resize:vertical;min-height:78px}
-  textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+  textarea,input,select{width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
+  textarea{resize:vertical;min-height:84px} textarea:focus,input:focus,select:focus{border-color:var(--accent)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{background:#0e1420;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;
-    color:var(--muted);cursor:pointer}
+  .chip{background:#0e1420;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;color:var(--muted);cursor:pointer}
   .chip:hover{border-color:var(--accent);color:var(--text)}
-  .btn{width:100%;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;
-    background:linear-gradient(135deg,var(--accent),#ff3d81);color:#fff;margin-top:14px}
-  .btn:disabled{opacity:.55;cursor:not-allowed}
-  .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-weight:600;margin-top:0}
+  .btn{width:100%;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),#ff3d81);color:#fff;margin-top:14px}
+  .btn:disabled{opacity:.55;cursor:not-allowed} .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-weight:600;margin-top:0}
   .btn.sm{padding:7px 12px;width:auto;font-size:12px;margin:0}
   .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .out{min-height:340px;border:1px solid var(--line);border-radius:12px;background:#0e1420;
-    display:grid;place-items:center;overflow:hidden;padding:10px}
+  .out{min-height:340px;border:1px solid var(--line);border-radius:12px;background:#0e1420;display:grid;place-items:center;overflow:hidden;padding:10px}
   .out img{max-width:100%;max-height:560px;border-radius:8px;display:block}
   .out .ph{color:var(--muted);text-align:center;font-size:13px;padding:30px 16px}
-  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);padding:3px 0}
-  .kv b{color:var(--text);font-weight:600}
-  .hist{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
-  .hist img{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
-  .hist img:hover{border-color:var(--accent)}
-  .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px;white-space:pre-wrap}
-  .status.err{color:#ff9b9b}
-  .hidden{display:none!important}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
-  pre.api{background:#0e1420;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;
-    max-height:280px;font-size:11.5px;color:#9fb3cc}
-  .safety{font-size:11.5px;color:var(--muted);margin-top:8px}
-  .safety.blocked{color:#ff9b9b;font-weight:600}
-  .flex-end{display:flex;justify-content:flex-end}
-  .split{display:flex;gap:8px}
-  .split>*{flex:1}
-  .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
-  .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
+  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);padding:3px 0} .kv b{color:var(--text);font-weight:600}
+  .hist{display:flex;gap:8px;overflow-x:auto;padding:4px 0} .hist img{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
+  .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px;white-space:pre-wrap} .status.err{color:#ff9b9b}
+  .hidden{display:none!important} .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
+  pre.api{background:#0e1420;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;max-height:280px;font-size:11.5px;color:#9fb3cc}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:6px} .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
   .toggle input{width:16px;height:16px;accent-color:var(--accent)}
-  .gen-form .fld{margin-bottom:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
+<header class="top">
+  <div class="brand"><div class="logo">🪄</div><div><div>Qwen Image Edit Studio</div><div style="font-size:11.5px;color:var(--muted);font-weight:500">universal editor · fixed tabs + no distortion</div></div></div>
+  <div class="inline"><span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span></div>
+</header>
 
-  <header class="top">
-    <div class="brand">
-      <div class="logo">🪄</div>
-      <div>
-        <div>Qwen Image Edit Studio</div>
-        <div style="font-size:11.5px;color:var(--muted);font-weight:500">Your personal prompt-driven image editor · powered by Hugging Face Spaces</div>
-      </div>
-    </div>
-    <div class="inline">
-      <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
-    </div>
-  </header>
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-tab="lora">LoRA Editor</button>
+  <button class="tab" data-tab="custom">Custom Space</button>
+  <button class="tab" data-tab="settings">Settings</button>
+</nav>
 
-  <nav class="tabs">
-    <button class="tab active" data-tab="lora">LoRA Editor</button>
-    <button class="tab" data-tab="custom">Custom Space</button>
-    <button class="tab" data-tab="settings">Settings</button>
-  </nav>
+<section id="tab-lora">
+<div class="grid">
+<div>
+<div class="card">
+<h3>QWEN-IMAGE-EDIT <span class="badge">Universal Fix</span></h3>
+<div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">Space: prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast · Works for ANY image type</div>
+<div class="note green"><b>✓ Fixed:</b> Tabs now work, auto-resize to 1024px, safe defaults. For <b>any image</b> use <b>Anything2Real</b> or <b>Studio-DeLight</b>. For creative use other LoRAs.</div>
 
-  <!-- ============ TAB 1: LoRA Editor ============ -->
-  <section id="tab-lora">
-    <div class="grid">
-      <!-- LEFT: inputs -->
-      <div>
-        <div class="card">
-          <h3 style="display:flex;align-items:center">Qwen-Image-Edit<span class="badge" id="stepBadge">4-Step Fast</span></h3>
-          <div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">AIO · prompt-driven image editing · 19 LoRA adapters</div>
+<label class="field">Upload image(s)</label>
+<div class="drop" id="drop"><div style="font-size:26px">⬆</div><div><b>Drop files here</b></div><div class="hint">— or — Click to upload</div></div>
+<input type="file" id="fileInput" accept="image/*" multiple class="hidden"/>
+<label class="field" style="margin-top:14px">📋 Paste (Ctrl+V)</label>
+<div class="drop" id="pasteZone" tabindex="0"><div style="font-size:26px">📋</div><div><b>Paste from Clipboard</b></div><div class="hint">focus + Ctrl+V</div></div>
+<div class="thumbs" id="thumbs"></div>
 
-          <div class="note">
-            By using this tool you agree to comply with the
-            <a href="https://huggingface.co/content-policy" target="_blank" rel="noopener">Hugging&nbsp;Face Content Policy</a>.
-            You are solely responsible for any images generated. The author assumes no liability for user-generated outputs.
-          </div>
+<label class="field" for="prompt">Prompt</label>
+<textarea id="prompt" placeholder="For any image: describe what to change. Keep empty for enhance. Examples: change background to beach / make it studio lighting / keep same person but smile / turn into product photo"></textarea>
+<div class="chips" id="promptChips"></div>
 
-          <label class="field">Upload image(s) — select several at once, drag-n-drop, or paste (Ctrl/⌘+V)</label>
-          <div class="drop" id="drop">
-            <div class="big">⬆</div>
-            <div><b>Drop files here</b></div>
-            <div class="sub">— or —</div>
-            <div class="sub">Click to upload</div>
-          </div>
-          <input type="file" id="fileInput" accept="image/*" multiple class="hidden" />
+<label class="field" for="lora">LoRA adapter</label>
+<select id="lora"></select>
+<div class="hint" id="loraHint"></div>
 
-          <label class="field" style="margin-top:14px">📋 Paste image here (Ctrl+V) — or click the clipboard icon</label>
-          <div class="drop" id="pasteZone" tabindex="0">
-            <div class="big">📋</div>
-            <div><b>Paste from Clipboard</b></div>
-            <div class="sub">focus this box and press Ctrl/⌘+V</div>
-          </div>
-
-          <div class="thumbs" id="thumbs"></div>
-
-          <label class="field" for="prompt">Prompt</label>
-          <textarea id="prompt" placeholder="e.g. Transform into anime. / Rotate the camera 45 degrees to the right. / Apply the lighting from image 2 to image 1."></textarea>
-          <div class="chips" id="promptChips"></div>
-
-          <label class="field" for="lora">LoRA adapter</label>
-          <select id="lora"></select>
-
-          <div class="row">
-            <div>
-              <label class="field" for="steps">Steps</label>
-              <input type="number" id="steps" value="4" min="1" max="50" />
-            </div>
-            <div>
-              <label class="field" for="guidance">Guidance scale</label>
-              <input type="number" id="guidance" value="4" min="0" max="20" step="0.5" />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label class="field" for="seed">Seed</label>
-              <input type="number" id="seed" value="0" min="0" />
-            </div>
-            <div class="toggle" style="margin-top:26px">
-              <input type="checkbox" id="randomize" /> <label for="randomize" style="margin:0">Randomize seed</label>
-            </div>
-          </div>
-
-          <button class="btn" id="generate">✨ Generate</button>
-          <div class="split" style="margin-top:8px">
-            <button class="btn secondary sm" id="clearAll" style="width:100%">Clear images</button>
-            <button class="btn secondary sm" id="checkSafety" style="width:100%">Run safety check</button>
-          </div>
-          <div class="status" id="status"></div>
-        </div>
-      </div>
-
-      <!-- RIGHT: output -->
-      <div>
-        <div class="card">
-          <h3>Result</h3>
-          <div class="out" id="out">
-            <div class="ph">Drop or paste an image, write a prompt, then hit Generate.<br /><br />
-              First run may take 30–60 s while the Space wakes up.</div>
-          </div>
-          <div style="margin-top:10px">
-            <div class="kv"><span>Seed used</span><b id="metaSeed">—</b></div>
-            <div class="kv"><span>LoRA</span><b id="metaLora">—</b></div>
-            <div class="kv"><span>Time</span><b id="metaTime">—</b></div>
-          </div>
-          <div class="split" style="margin-top:10px">
-            <button class="btn secondary sm" id="useAsInput" style="width:100%">↩ Use as input</button>
-            <button class="btn secondary sm" id="saveResult" style="width:100%">⤓ Save PNG</button>
-          </div>
-          <div class="hint" id="saveHint"></div>
-        </div>
-        <div class="card">
-          <h3>Session history</h3>
-          <div class="hist" id="hist"><span class="hint">No results yet.</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TAB 2: Custom Space ============ -->
-  <section id="tab-custom" class="hidden">
-    <div class="grid">
-      <div>
-        <div class="card">
-          <h3>Any image-editing Space</h3>
-          <div class="hint" style="margin-bottom:10px">
-            Connect to any public Gradio-based Space. The form below is generated from that Space's own API,
-            so it adapts to whatever inputs it declares.
-          </div>
-
-          <label class="field" for="customSpace">Space ID</label>
-          <input type="text" id="customSpace" value="selfit-camera/Omni-Image-Editor" />
-          <div class="chips" id="spacePresets"></div>
-
-          <div class="inline" style="margin-top:12px">
-            <button class="btn secondary sm" id="connectCustom">Connect</button>
-            <button class="btn secondary sm" id="inspectApi">Inspect API</button>
-            <span class="status" id="customStatus" style="margin:0"></span>
-          </div>
-
-          <label class="field" for="endpoint" style="margin-top:14px">Endpoint</label>
-          <select id="endpoint"><option value="">— connect to list endpoints —</option></select>
-
-          <div id="genForm" class="gen-form" style="margin-top:12px"></div>
-          <button class="btn" id="runCustom">▶ Run</button>
-          <div class="status" id="customRunStatus"></div>
-        </div>
-      </div>
-      <div>
-        <div class="card">
-          <h3>API details</h3>
-          <pre class="api" id="apiDump">Not inspected yet.</pre>
-        </div>
-        <div class="card">
-          <h3>Result</h3>
-          <div class="out" id="customOut"><div class="ph">Nothing yet.</div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TAB 3: Settings ============ -->
-  <section id="tab-settings" class="hidden">
-    <div class="card" style="max-width:720px">
-      <h3>Connection</h3>
-      <label class="field" for="spaceId">Default Space (LoRA Editor)</label>
-      <input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast" />
-      <div class="hint">The app calls this Space's <span class="mono">/edit_image</span> endpoint directly from your browser.</div>
-
-      <label class="field" for="token">Hugging Face token (optional)</label>
-      <input type="password" id="token" placeholder="hf_..." autocomplete="off" />
-      <div class="hint">
-        Optional. A read token can raise your queue priority and lets you use private Spaces.
-        It is kept in memory for this session only — never stored or sent anywhere except Hugging Face.
-      </div>
-
-      <div class="inline" style="margin-top:14px">
-        <button class="btn secondary sm" id="applySettings">Apply &amp; connect</button>
-        <button class="btn secondary sm" id="disconnect">Disconnect</button>
-      </div>
-      <div class="status" id="settingsStatus"></div>
-
-      <h3 style="margin-top:22px">Notes &amp; limits</h3>
-      <div class="hint">
-        • Free Spaces sleep when idle; the first request can take 30–60 s to wake and will queue under load.<br />
-        • Images are sent to the Space as base64 JSON, so nothing is uploaded to a third party of your own.<br />
-        • <b>Save PNG</b> may be blocked when this page runs inside a sandboxed preview iframe — open the file directly in your browser (or host it) and it works normally.<br />
-        • The Space applies a content filter (NCII guard); blocked prompts return a message instead of an image.<br />
-        • Some Spaces expose a plain <span class="mono">/predict</span> endpoint instead of named ones — use the Custom Space tab for those.
-      </div>
-    </div>
-  </section>
+<div class="row">
+<div><label class="field" for="steps">Steps (10 recommended)</label><input type="number" id="steps" value="10" min="1" max="50"/></div>
+<div><label class="field" for="guidance">Guidance (1.5-2.0)</label><input type="number" id="guidance" value="1.8" min="0" max="20" step="0.1"/></div>
 </div>
+<div class="row">
+<div><label class="field" for="seed">Seed</label><input type="number" id="seed" value="0" min="0"/></div>
+<div class="toggle" style="margin-top:26px"><input type="checkbox" id="randomize" checked/><label for="randomize" style="margin:0">Randomize seed</label></div>
+</div>
+<div class="toggle"><input type="checkbox" id="preserve" checked/><label for="preserve" style="margin:0">Smart preservation (auto off for anime/cartoon LoRAs)</label></div>
+
+<button class="btn" id="generate">✨ Generate</button>
+<div style="display:flex;gap:8px;margin-top:8px"><button class="btn secondary sm" id="clearAll" style="width:100%">Clear</button><button class="btn secondary sm" id="checkSafety" style="width:100%">Safety check</button></div>
+<div class="status" id="status"></div>
+</div>
+</div>
+
+<div>
+<div class="card"><h3>Result</h3><div class="out" id="out"><div class="ph">Drop image, write prompt, Generate.<br/><br/>First run 30-60s to wake Space.</div></div>
+<div style="margin-top:10px"><div class="kv"><span>Seed</span><b id="metaSeed">—</b></div><div class="kv"><span>LoRA</span><b id="metaLora">—</b></div><div class="kv"><span>Time</span><b id="metaTime">—</b></div><div class="kv"><span>Size</span><b id="metaRes">—</b></div></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button class="btn secondary sm" id="useAsInput" style="width:100%">↩ Use as input</button><button class="btn secondary sm" id="saveResult" style="width:100%">⤓ Save PNG</button></div>
+<div class="hint" id="saveHint"></div>
+</div>
+<div class="card"><h3>Session history</h3><div class="hist" id="hist"><span class="hint">No results yet.</span></div></div>
+</div>
+</div>
+</section>
+
+<section id="tab-custom" class="hidden">
+<div class="grid">
+<div><div class="card"><h3>Any image-editing Space</h3><div class="hint" style="margin-bottom:10px">Connect any Gradio Space.</div>
+<label class="field">Space ID</label><input type="text" id="customSpace" value="selfit-camera/Omni-Image-Editor"/><div class="chips" id="spacePresets"></div>
+<div class="inline" style="margin-top:12px"><button class="btn secondary sm" id="connectCustom">Connect</button><button class="btn secondary sm" id="inspectApi">Inspect API</button><span class="status" id="customStatus" style="margin:0"></span></div>
+<label class="field" style="margin-top:14px">Endpoint</label><select id="endpoint"><option>— connect to list —</option></select>
+<div id="genForm" style="margin-top:12px"></div><button class="btn" id="runCustom">▶ Run</button><div class="status" id="customRunStatus"></div>
+</div></div>
+<div><div class="card"><h3>API details</h3><pre class="api" id="apiDump">Not inspected yet.</pre></div><div class="card"><h3>Result</h3><div class="out" id="customOut"><div class="ph">Nothing yet.</div></div></div></div>
+</div>
+</section>
+
+<section id="tab-settings" class="hidden">
+<div class="card" style="max-width:720px"><h3>Connection</h3>
+<label class="field">Default Space</label><input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast"/>
+<div class="hint">This Space is best for ANY kind of image. Keep it.</div>
+<label class="field" for="token">HF Token (hf_... paste here - needed to avoid queue)</label><input type="password" id="token" placeholder="hf_..."/>
+<div class="hint">Get token from huggingface.co/settings/tokens - read token. Stored locally only.</div>
+<div class="inline" style="margin-top:14px"><button class="btn secondary sm" id="applySettings">Apply & connect</button><button class="btn secondary sm" id="disconnect">Disconnect</button></div>
+<div class="status" id="settingsStatus"></div>
+<h3 style="margin-top:22px">Universal Mode Tips</h3>
+<div class="hint">• For ANY photo (person, product, landscape, car, food): use LoRA = Anything2Real + Steps 10 + Guidance 1.8<br/>• For light fix: Studio-DeLight<br/>• For upscaling: Upscaler or Unblur-Anything<br/>• For background change: Anything2Real with prompt "change background to ... keep subject same"<br/>• Don't use Hyper-Realistic-Portrait for full body - it distorts.</div>
+</div>
+</section>
+
+</div>
+
+<script>
+// --- TABS FIX: simple, no dependencies ---
+(function(){
+  var tabs=document.querySelectorAll('#tabs .tab');
+  function showTab(name){
+    tabs.forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-tab')===name); });
+    ['lora','custom','settings'].forEach(function(k){
+      var sec=document.getElementById('tab-'+k);
+      if(sec) sec.classList.toggle('hidden', k!==name);
+    });
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){ showTab(t.getAttribute('data-tab')); });
+  });
+})();
+</script>
 
 <script type="module">
 import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
-/* ------------------------------------------------------------------ *
- *  Config
- * ------------------------------------------------------------------ */
-const LORAS = [
-  "Multiple-Angles","Photo-to-Anime","Anime-V2","Light-Migration","Upscaler",
-  "Style-Transfer","Manga-Tone","Anything2Real","Fal-Multiple-Angles","Polaroid-Photo",
-  "Unblur-Anything","Midnight-Noir-Eyes-Spotlight","Hyper-Realistic-Portrait",
-  "Ultra-Realistic-Portrait","Pixar-Inspired-3D","Noir-Comic-Book","Any-light",
-  "Studio-DeLight","Cinematic-FlatLog"
+const LORAS=["Anything2Real","Studio-DeLight","Ultra-Realistic-Portrait","Unblur-Anything","Upscaler","Multiple-Angles","Fal-Multiple-Angles","Light-Migration","Any-light","Style-Transfer","Photo-to-Anime","Anime-V2","Manga-Tone","Noir-Comic-Book","Pixar-Inspired-3D","Polaroid-Photo","Midnight-Noir-Eyes-Spotlight","Hyper-Realistic-Portrait","Cinematic-FlatLog"];
+
+const PROMPT_PRESETS=[
+  {lora:"Anything2Real", prompt:"Keep same subject and composition, photorealistic enhancement, natural colors, sharp focus"},
+  {lora:"Anything2Real", prompt:"Change background to white studio background, keep subject exactly same"},
+  {lora:"Anything2Real", prompt:"Change background to beach sunset, keep person same, natural lighting"},
+  {lora:"Studio-DeLight", prompt:"Neutral uniform studio lighting, preserve identity and details, photorealistic"},
+  {lora:"Unblur-Anything", prompt:"Unblur, enhance details, keep original colors"},
+  {lora:"Upscaler", prompt:"Upscale to 4K, preserve details"},
+  {lora:"Photo-to-Anime", prompt:"Transform into anime style"},
+  {lora:"Pixar-Inspired-3D", prompt:"Transform into Pixar 3D style"},
+  {lora:"Style-Transfer", prompt:"Convert Image 1 to style of Image 2"},
 ];
 
-const PROMPT_PRESETS = [
-  { lora:"Photo-to-Anime",            prompt:"Transform into anime." },
-  { lora:"Multiple-Angles",           prompt:"Rotate the camera 45 degrees to the right." },
-  { lora:"Fal-Multiple-Angles",       prompt:"Front-right quarter view." },
-  { lora:"Upscaler",                  prompt:"Upscale this picture to 4K resolution." },
-  { lora:"Unblur-Anything",           prompt:"Unblur and upscale." },
-  { lora:"Pixar-Inspired-3D",         prompt:"Transform it into Pixar-inspired 3D." },
-  { lora:"Hyper-Realistic-Portrait",  prompt:"Transform into a hyper-realistic face portrait." },
-  { lora:"Studio-DeLight",            prompt:"Neutral uniform lighting. Preserve identity and composition." },
-  { lora:"Cinematic-FlatLog",         prompt:"Transform into a cinematic flat log." },
-  { lora:"Any-light",                 prompt:"Apply the lighting from image 2 to image 1." },
-  { lora:"Light-Migration",           prompt:"Refer to the color tone, remove the original lighting from Image 1, and relight Image 1 based on the lighting and color tone of Image 2." },
-  { lora:"Style-Transfer",            prompt:"Convert Image 1 to the style of Image 2." },
-  { lora:"Anything2Real",             prompt:"Change the picture to realistic photograph." },
-  { lora:"Polaroid-Photo",            prompt:"cinematic polaroid with soft grain subtle vignette gentle lighting white frame handwritten photographed preserving realistic texture and details." },
-  { lora:"Noir-Comic-Book",           prompt:"Transform into a noir comic book style." },
-  { lora:"Manga-Tone",                prompt:"Paint with manga tone." },
-];
+const SPACE_PRESETS=["prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast","selfit-camera/Omni-Image-Editor","Qwen/Qwen-Image-Edit","linoyts/Qwen-Image-Edit-Angles"];
 
-const SPACE_PRESETS = [
-  "selfit-camera/Omni-Image-Editor",
-  "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
-  "linoyts/Qwen-Image-Edit-Angles",
-  "Qwen/Qwen-Image-Edit",
-  "prithivMLmods/Qwen-Image-Edit-2509-LoRAs-Fast",
-  "multimodalart/Qwen-Image-Edit-Fast",
-  "linoyts/Qwen-Image-Edit-Inpaint",
-  "fffiloni/diffusers-image-outpaint"
-];
+const S={loraClient:null,loraSpaceId:"prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",customClient:null,token:"",images:[],lastResult:null,history:[],busy:false,imgSeq:1};
 
-/* ------------------------------------------------------------------ *
- *  State (in-memory only — no localStorage in sandboxed previews)
- * ------------------------------------------------------------------ */
-const S = {
-  loraClient: null,
-  loraSpaceId: "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",
-  customClient: null,
-  customSpaceId: null,
-  apiInfo: null,
-  token: "",
-  images: [],          // { id, name, dataUrl }
-  lastResult: null,
-  history: [],
-  busy: false,
-  imgSeq: 1
-};
+const $=function(id){return document.getElementById(id);};
+function el(tag,cls,txt){var n=document.createElement(tag); if(cls) n.className=cls; if(txt!=null) n.textContent=txt; return n;}
+function setStatus(node,msg,isErr){ if(!node) return; node.textContent=msg||""; node.classList.toggle("err", !!isErr); }
+function setConn(text,kind){ var t=$("connText"); if(t) t.textContent=text; var p=$("connPill"); if(p) p.className="pill"+(kind?" "+kind:""); }
 
-/* ------------------------------------------------------------------ *
- *  DOM helpers
- * ------------------------------------------------------------------ */
-const $ = (id) => document.getElementById(id);
-const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
+var loraSel=$("lora");
+LORAS.forEach(function(n){ var o=el("option"); o.value=n; o.textContent=n; loraSel.appendChild(o); });
+loraSel.value="Anything2Real";
 
-function setStatus(node, msg, isErr) {
-  node.textContent = msg || "";
-  node.classList.toggle("err", !!isErr);
-}
-
-function setConn(text, kind) {
-  $("connText").textContent = text;
-  const p = $("connPill");
-  p.className = "pill" + (kind ? " " + kind : "");
-}
-
-/* ------------------------------------------------------------------ *
- *  Tabs
- * ------------------------------------------------------------------ */
-document.querySelectorAll(".tab").forEach((t) => {
-  t.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
-    ["lora","custom","settings"].forEach((k) => $("tab-" + k).classList.toggle("hidden", k !== t.dataset.tab));
-  });
-});
-
-/* ------------------------------------------------------------------ *
- *  Populate LoRA select + prompt chips + space presets
- * ------------------------------------------------------------------ */
-const loraSel = $("lora");
-LORAS.forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; loraSel.appendChild(o); });
-loraSel.value = "Photo-to-Anime";
-
-const chipBox = $("promptChips");
-PROMPT_PRESETS.forEach((p) => {
-  const c = el("span", "chip", p.prompt.length > 42 ? p.prompt.slice(0, 40) + "…" : p.prompt);
-  c.title = p.prompt;
-  c.addEventListener("click", () => {
-    $("prompt").value = p.prompt;
-    if (LORAS.includes(p.lora)) loraSel.value = p.lora;
-  });
+var chipBox=$("promptChips");
+PROMPT_PRESETS.forEach(function(p){
+  var c=el("span","chip", p.prompt.length>60?p.prompt.slice(0,57)+"...":p.prompt);
+  c.title=p.prompt;
+  c.addEventListener("click", function(){ $("prompt").value=p.prompt; if(LORAS.indexOf(p.lora)>=0){ loraSel.value=p.lora; updateLoraHint(); }});
   chipBox.appendChild(c);
 });
 
-const presetBox = $("spacePresets");
-SPACE_PRESETS.forEach((id) => {
-  const c = el("span", "chip", id.split("/")[1] || id);
-  c.title = id;
-  c.addEventListener("click", () => { $("customSpace").value = id; });
+var presetBox=$("spacePresets");
+SPACE_PRESETS.forEach(function(id){
+  var c=el("span","chip", id.split("/")[1]||id);
+  c.title=id; c.addEventListener("click", function(){ $("customSpace").value=id; });
   presetBox.appendChild(c);
 });
 
-/* ------------------------------------------------------------------ *
- *  Image intake: file picker, drag & drop, clipboard paste
- * ------------------------------------------------------------------ */
-const fileInput = $("fileInput");
-const drop = $("drop");
+function updateLoraHint(){
+  var v=loraSel.value;
+  var map={
+    "Anything2Real":"UNIVERSAL - Best for ANY kind of image (people, product, landscape, food, car). No distortion.",
+    "Studio-DeLight":"UNIVERSAL - Best for fixing light on any image. Keeps everything same.",
+    "Ultra-Realistic-Portrait":"For portraits. May distort full body.",
+    "Hyper-Realistic-Portrait":"⚠️ FACE ONLY - Will distort if used on full body/product/background. Don't use for universal editing.",
+    "Unblur-Anything":"Universal - sharpens any image.",
+    "Upscaler":"Universal - upscales any image."
+  };
+  var h=$("loraHint"); if(!h) return;
+  h.textContent=map[v]||"";
+  h.style.color=v==="Hyper-Realistic-Portrait"?"#ff9b9b":"";
+}
+loraSel.addEventListener("change", updateLoraHint); updateLoraHint();
 
-drop.addEventListener("click", () => fileInput.click());
-fileInput.addEventListener("change", () => { addFiles([...fileInput.files]); fileInput.value = ""; });
-
-["dragenter","dragover"].forEach((ev) =>
-  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); })
-);
-["dragleave","dragend"].forEach((ev) =>
-  drop.addEventListener(ev, () => drop.classList.remove("over"))
-);
-drop.addEventListener("drop", (e) => {
-  e.preventDefault(); drop.classList.remove("over");
-  addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/")));
+// --- Image intake with auto resize fix ---
+var fileInput=$("fileInput"); var drop=$("drop");
+if(drop) drop.addEventListener("click", function(){ fileInput.click(); });
+if(fileInput) fileInput.addEventListener("change", function(){ addFiles(Array.from(fileInput.files)); fileInput.value=""; });
+["dragenter","dragover"].forEach(function(ev){ if(drop) drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add("over"); }); });
+["dragleave","dragend"].forEach(function(ev){ if(drop) drop.addEventListener(ev, function(){ drop.classList.remove("over"); }); });
+if(drop) drop.addEventListener("drop", function(e){ e.preventDefault(); drop.classList.remove("over"); var fs=Array.from(e.dataTransfer.files).filter(function(f){return f.type.indexOf("image/")===0;}); addFiles(fs); });
+document.addEventListener("paste", function(e){
+  var items=e.clipboardData && e.clipboardData.items ? Array.from(e.clipboardData.items) : [];
+  var files=items.filter(function(i){return i.type.indexOf("image/")===0;}).map(function(i){return i.getAsFile();}).filter(Boolean);
+  if(files.length){ e.preventDefault(); addFiles(files); }
 });
+var pz=$("pasteZone");
+if(pz){
+  pz.addEventListener("paste", function(e){
+    var items=e.clipboardData && e.clipboardData.items ? Array.from(e.clipboardData.items) : [];
+    var files=items.filter(function(i){return i.type.indexOf("image/")===0;}).map(function(i){return i.getAsFile();}).filter(Boolean);
+    if(files.length){ e.preventDefault(); addFiles(files); }
+  });
+  pz.addEventListener("click", function(){ pz.focus(); });
+}
 
-// Paste anywhere in the page
-document.addEventListener("paste", (e) => {
-  const items = [...(e.clipboardData?.items || [])];
-  const files = items.filter((i) => i.type.startsWith("image/")).map((i) => i.getAsFile()).filter(Boolean);
-  if (files.length) { e.preventDefault(); addFiles(files); }
-});
-// Paste when the paste zone is focused (explicit affordance from the HF UI)
-$("pasteZone").addEventListener("paste", (e) => {
-  const files = [...(e.clipboardData?.items || [])]
-    .filter((i) => i.type.startsWith("image/"))
-    .map((i) => i.getAsFile()).filter(Boolean);
-  if (files.length) { e.preventDefault(); addFiles(files); }
-});
-
-function addFiles(files) {
-  let pending = files.length;
-  if (!pending) return;
-  files.forEach((f) => {
-    const r = new FileReader();
-    r.onload = () => {
-      S.images.push({ id: S.imgSeq++, name: f.name || `pasted-${S.imgSeq}.png`, dataUrl: r.result });
-      renderThumbs();
-      if (--pending === 0) setStatus($("status"), `${S.images.length} image(s) ready.`);
+function resizeDataUrl(dataUrl, maxSide){
+  maxSide=maxSide||1024;
+  return new Promise(function(resolve,reject){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width, h=img.height;
+      if(Math.max(w,h)>maxSide){
+        if(w>h){ h=Math.round(h*maxSide/w); w=maxSide; } else { w=Math.round(w*maxSide/h); h=maxSide; }
+      }
+      var c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      resolve({url:c.toDataURL('image/jpeg',0.92), w:w, h:h});
     };
-    r.onerror = () => { if (--pending === 0) renderThumbs(); };
-    r.readAsDataURL(f);
+    img.onerror=reject; img.src=dataUrl;
   });
 }
 
-function renderThumbs() {
-  const box = $("thumbs");
-  box.innerHTML = "";
-  S.images.forEach((im, i) => {
-    const t = el("div", "thumb");
-    const img = el("img"); img.src = im.dataUrl; img.alt = im.name;
-    const rm = el("button", null, "×");
-    rm.title = "Remove";
-    rm.addEventListener("click", () => { S.images = S.images.filter((x) => x.id !== im.id); renderThumbs(); });
-    const idx = el("span", "idx", "img" + (i + 1));
-    t.append(img, rm, idx);
-    box.appendChild(t);
-  });
-  if (S.images.length > 1) {
-    const hint = el("div", "hint", "Order matters: “image 1”, “image 2” in your prompt refer to these.");
-    hint.style.width = "100%";
-    box.appendChild(hint);
+async function addFiles(files){
+  if(!files.length) return;
+  setStatus($("status"), "Processing "+files.length+" image(s)...");
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    var dataUrl=await new Promise(function(res){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.readAsDataURL(f); });
+    var resized=await resizeDataUrl(dataUrl, 1024);
+    S.images.push({id:S.imgSeq++, name:f.name||("img-"+S.imgSeq+".jpg"), dataUrl:resized.url, w:resized.w, h:resized.h});
   }
+  renderThumbs();
+  setStatus($("status"), S.images.length+" image(s) ready - auto resized to 1024px (fixes distortion).");
 }
+function renderThumbs(){
+  var box=$("thumbs"); if(!box) return; box.innerHTML="";
+  S.images.forEach(function(im,idx){
+    var t=el("div","thumb"); var img=el("img"); img.src=im.dataUrl; img.alt=im.name;
+    var rm=el("button",null,"×"); rm.addEventListener("click", function(){ S.images=S.images.filter(function(x){return x.id!==im.id;}); renderThumbs(); });
+    var idxx=el("span","idx","img"+(idx+1)+" "+im.w+"x"+im.h);
+    t.appendChild(img); t.appendChild(rm); t.appendChild(idxx); box.appendChild(t);
+  });
+}
+var clearBtn=$("clearAll"); if(clearBtn) clearBtn.addEventListener("click", function(){ S.images=[]; renderThumbs(); setStatus($("status"),""); });
 
-$("clearAll").addEventListener("click", () => { S.images = []; renderThumbs(); setStatus($("status"), ""); });
-
-/* ------------------------------------------------------------------ *
- *  Connection
- * ------------------------------------------------------------------ */
-function statusCallback(label) {
-  return (st) => {
-    // Defensive: the callback shape has changed across client versions.
-    let stage = "";
-    try {
-      stage = st?.status?.stage || st?.stage || "";
-    } catch (_) { stage = ""; }
-    if (stage) setStatus($(label), `Space status: ${stage}…`);
+function statusCallback(label){
+  return function(st){
+    var stage=""; try{ stage=st && (st.status && st.status.stage || st.stage) || ""; }catch(e){}
+    if(stage) setStatus($(label), "Space status: "+stage+"...");
   };
 }
-
-async function connectLora(spaceId, token) {
-  setConn("Connecting…", "busy");
-  setStatus($("status"), `Connecting to ${spaceId}… (a sleeping Space can take ~30–60 s to start)`);
-  try {
-    const opts = { status_callback: statusCallback("status") };
-    if (token && token.startsWith("hf_")) opts.token = token;
-    S.loraClient = await Client.connect(spaceId, opts);
-    S.loraSpaceId = spaceId;
-    setConn("Connected: " + spaceId.split("/")[1], "ok");
-    setStatus($("status"), "Connected. Ready to edit.");
+async function connectLora(spaceId, token){
+  setConn("Connecting...","busy");
+  setStatus($("status"), "Connecting to "+spaceId+"... may take 30-60s if sleeping");
+  try{
+    var opts={status_callback: statusCallback("status")};
+    if(token && token.indexOf("hf_")===0) opts.token=token;
+    S.loraClient=await Client.connect(spaceId, opts);
+    S.loraSpaceId=spaceId;
+    setConn("Connected: "+spaceId.split("/")[1],"ok");
+    setStatus($("status"), "Connected. Ready for ANY image type. Paste HF token in Settings to avoid queue.");
     return true;
-  } catch (e) {
-    S.loraClient = null;
-    setConn("Connection failed", "err");
-    setStatus($("status"),
-      "Could not connect: " + (e?.message || e) +
-      "\n\nIf this is a network/CORS block in a sandboxed preview, download this file and open it directly in your browser.", true);
+  }catch(e){
+    S.loraClient=null; setConn("Connection failed","err");
+    setStatus($("status"), "Connect failed: "+(e && e.message || e)+" - try direct open, not preview.", true);
     return false;
   }
 }
 
-/* ------------------------------------------------------------------ *
- *  Main generate flow (exact schema of the LoRAs-Fast Space)
- * ------------------------------------------------------------------ */
-function payloadFor() {
-  const prompt = $("prompt").value.trim();
+function buildPrompt(){
+  var p=$("prompt").value.trim();
+  var realisticLoRAs=["Anything2Real","Studio-DeLight","Ultra-Realistic-Portrait","Unblur-Anything","Upscaler","Light-Migration","Any-light"];
+  var isRealistic=realisticLoRAs.indexOf(loraSel.value)>=0;
+  if($("preserve") && $("preserve").checked && isRealistic){
+    if(p && p.toLowerCase().indexOf("preserve identity")<0 && p.length<200){
+      p=p + ", preserve original subject, same composition, photorealistic, natural texture, no painting, sharp focus";
+    } else if(!p){
+      p="Preserve original subject exactly, photorealistic enhancement only, natural colors, sharp focus, no style change";
+    }
+  }
+  return p || "Enhance image, photorealistic, sharp focus, natural colors";
+}
+
+function payloadFor(){
+  var prompt=buildPrompt();
+  var rand=$("randomize") && $("randomize").checked;
+  var seedVal= rand ? Math.floor(Math.random()*1000000) : Math.max(0, parseInt($("seed").value,10)||42);
   return {
-    images_b64_json: JSON.stringify(S.images.map((i) => i.dataUrl)),
-    prompt,
+    images_b64_json: JSON.stringify(S.images.map(function(i){return i.dataUrl;})),
+    prompt: prompt,
     lora_adapter: loraSel.value,
-    seed: Math.max(0, parseInt($("seed").value, 10) || 0),
-    randomize_seed: $("randomize").checked,
-    guidance_scale: parseFloat($("guidance").value) || 4,
-    steps: Math.max(1, parseInt($("steps").value, 10) || 4)
+    seed: seedVal,
+    randomize_seed: rand,
+    guidance_scale: Math.min(5, parseFloat($("guidance").value)||1.8),
+    steps: Math.max(8, parseInt($("steps").value,10)||10)
   };
 }
 
-$("generate").addEventListener("click", async () => {
-  if (S.busy) return;
-  if (!S.images.length) { setStatus($("status"), "Add at least one image first (drop, upload, or paste).", true); return; }
-  const payload = payloadFor();
-  if (!payload.prompt) { setStatus($("status"), "Write a prompt describing the edit.", true); return; }
-
-  if (!S.loraClient) {
-    const ok = await connectLora(S.loraSpaceId, S.token);
-    if (!ok) return;
+var genBtn=$("generate");
+if(genBtn) genBtn.addEventListener("click", async function(){
+  if(S.busy) return;
+  if(!S.images.length){ setStatus($("status"), "Add at least one image first.", true); return; }
+  var payload=payloadFor();
+  if(loraSel.value==="Hyper-Realistic-Portrait"){
+    if(!confirm("Hyper-Realistic-Portrait is for tight face only. It WILL distort any other image (product, full body, landscape).\n\nRecommended universal LoRA: Anything2Real or Studio-DeLight.\n\nContinue anyway?")) return;
   }
-
-  S.busy = true;
-  $("generate").disabled = true;
-  setConn("Generating…", "busy");
-  setStatus($("status"), "Queued — waiting for the Space…");
-  const t0 = Date.now();
-
-  try {
-    // Optional pre-flight safety check (pure CPU on the Space, no GPU queue)
-    if ($("checkSafety").dataset.auto === "1") await safetyCheck(payload.prompt, false);
-
-    const job = S.loraClient.submit("/edit_image", payload);
-    let out = null;
-    for await (const m of job) {
-      if (m.type === "status") {
-        const pos = m.position != null ? `queue position ${m.position}` : "queued";
-        const eta = m.eta != null ? ` · ETA ${Math.round(m.eta)}s` : "";
-        setStatus($("status"), `Running — ${pos}${eta}`);
-      } else if (m.type === "data") {
-        out = m.data;
-      }
-    }
-
-    const data = Array.isArray(out) ? out[0] : out;
-    if (!data) throw new Error("No response payload from the Space.");
-    if (data.status === "blocked") {
-      setStatus($("status"), data.message || "Prompt blocked by the content filter.", true);
-      return;
-    }
-    if (!data.image) throw new Error(data.message || "The Space returned no image.");
-
-    showResult(data.image, payload, Date.now() - t0);
-    setStatus($("status"), "Done.");
-  } catch (e) {
-    setStatus($("status"),
-      "Generation failed: " + (e?.message || e) +
-      "\n\nTip: the Space may have been restarted or is rate-limiting anonymous traffic. Retry, or add a Hugging Face token in Settings.", true);
-  } finally {
-    S.busy = false;
-    $("generate").disabled = false;
-    setConn("Connected: " + S.loraSpaceId.split("/")[1], "ok");
+  if(!S.loraClient){
+    var ok=await connectLora(S.loraSpaceId, S.token);
+    if(!ok) return;
   }
+  S.busy=true; genBtn.disabled=true; setConn("Generating...","busy"); setStatus($("status"), "Queued...");
+  var t0=Date.now();
+  try{
+    var job=S.loraClient.submit("/edit_image", payload);
+    var out=null;
+    for await (var m of job){
+      if(m.type==="status"){
+        var pos=m.position!=null ? "queue "+m.position : "queued";
+        var eta=m.eta!=null ? " ETA "+Math.round(m.eta)+"s" : "";
+        setStatus($("status"), "Running - "+pos+eta);
+      } else if(m.type==="data"){ out=m.data; }
+    }
+    var data=Array.isArray(out)?out[0]:out;
+    if(!data) throw new Error("No response");
+    if(data.status==="blocked"){ setStatus($("status"), data.message||"Blocked by filter", true); return; }
+    if(!data.image) throw new Error(data.message||"No image returned");
+    showResult(data.image, payload, Date.now()-t0);
+    setStatus($("status"), "Done");
+  }catch(e){
+    setStatus($("status"), "Failed: "+(e && e.message || e)+"\nAdd HF token in Settings and retry.", true);
+  }finally{ S.busy=false; genBtn.disabled=false; setConn("Connected: "+S.loraSpaceId.split("/")[1],"ok"); }
 });
 
-async function safetyCheck(prompt, loud = true) {
-  if (!S.loraClient) { if (loud) setStatus($("status"), "Not connected yet.", true); return null; }
-  try {
-    const res = await S.loraClient.predict("/check_safety", { prompt });
-    const d = Array.isArray(res.data) ? res.data[0] : res.data;
-    if (loud) setStatus($("status"), d?.status === "blocked" ? ("⛔ " + d.message) : "✅ Prompt passed the content filter.", d?.status === "blocked");
+async function safetyCheck(prompt, loud){
+  if(loud===void 0) loud=true;
+  if(!S.loraClient){ if(loud) setStatus($("status"), "Not connected", true); return null; }
+  try{
+    var res=await S.loraClient.predict("/check_safety", {prompt:prompt});
+    var d=Array.isArray(res.data)?res.data[0]:res.data;
+    if(loud) setStatus($("status"), d && d.status==="blocked" ? "⛔ "+d.message : "✅ Passed filter", d && d.status==="blocked");
     return d;
-  } catch (e) {
-    if (loud) setStatus($("status"), "Safety check unavailable: " + (e?.message || e), true);
-    return null;
-  }
+  }catch(e){ if(loud) setStatus($("status"), "Safety check unavailable: "+(e && e.message || e), true); return null; }
 }
+var safetyBtn=$("checkSafety"); if(safetyBtn) safetyBtn.addEventListener("click", function(){ safetyCheck($("prompt").value.trim(), true); });
 
-$("checkSafety").addEventListener("click", () => safetyCheck($("prompt").value.trim(), true));
-// Enable the automatic pre-flight check after the user has used it once
-$("checkSafety").dataset.auto = "0";
-
-function showResult(dataUrl, payload, ms) {
-  const out = $("out");
-  out.innerHTML = "";
-  const img = el("img"); img.src = dataUrl; img.alt = "edited result";
-  out.appendChild(img);
-  S.lastResult = dataUrl;
-
-  $("metaSeed").textContent = payload.randomize_seed ? "(randomized)" : String(payload.seed);
-  $("metaLora").textContent = payload.lora_adapter;
-  $("metaTime").textContent = (ms / 1000).toFixed(1) + "s";
-
-  S.history.unshift({ dataUrl, prompt: payload.prompt, lora: payload.lora_adapter });
-  if (S.history.length > 24) S.history.pop();
-  renderHistory();
+function showResult(dataUrl, payload, ms){
+  var out=$("out"); if(!out) return; out.innerHTML=""; var img=el("img"); img.src=dataUrl; img.alt="result"; out.appendChild(img);
+  S.lastResult=dataUrl;
+  var msEl=$("metaSeed"); if(msEl) msEl.textContent=payload.randomize_seed?"random "+payload.seed:String(payload.seed);
+  var mlEl=$("metaLora"); if(mlEl) mlEl.textContent=payload.lora_adapter;
+  var mtEl=$("metaTime"); if(mtEl) mtEl.textContent=(ms/1000).toFixed(1)+"s";
+  var mrEl=$("metaRes"); if(mrEl) mrEl.textContent="1024px max";
+  S.history.unshift({dataUrl:dataUrl, prompt:payload.prompt, lora:payload.lora_adapter});
+  if(S.history.length>24) S.history.pop(); renderHistory();
 }
-
-function renderHistory() {
-  const box = $("hist");
-  box.innerHTML = "";
-  if (!S.history.length) { box.appendChild(el("span", "hint", "No results yet.")); return; }
-  S.history.forEach((h) => {
-    const img = el("img"); img.src = h.dataUrl; img.title = h.lora + " · " + h.prompt;
-    img.addEventListener("click", () => {
-      $("out").innerHTML = ""; const big = el("img"); big.src = h.dataUrl; $("out").appendChild(big);
-      S.lastResult = h.dataUrl; $("metaLora").textContent = h.lora;
-    });
+function renderHistory(){
+  var box=$("hist"); if(!box) return; box.innerHTML="";
+  if(!S.history.length){ box.appendChild(el("span","hint","No results yet.")); return; }
+  S.history.forEach(function(h){
+    var img=el("img"); img.src=h.dataUrl; img.title=h.lora+" - "+h.prompt;
+    img.addEventListener("click", function(){ var out=$("out"); out.innerHTML=""; var big=el("img"); big.src=h.dataUrl; out.appendChild(big); });
     box.appendChild(img);
   });
 }
-
-$("useAsInput").addEventListener("click", () => {
-  if (!S.lastResult) return;
-  S.images.push({ id: S.imgSeq++, name: "result.png", dataUrl: S.lastResult });
-  renderThumbs();
+var useBtn=$("useAsInput"); if(useBtn) useBtn.addEventListener("click", async function(){
+  if(!S.lastResult) return; var r=await resizeDataUrl(S.lastResult, 1024);
+  S.images=[{id:S.imgSeq++, name:"result-"+S.imgSeq+".jpg", dataUrl:r.url, w:r.w, h:r.h}]; renderThumbs(); setStatus($("status"), "Result set as input");
+});
+var saveBtn=$("saveResult"); if(saveBtn) saveBtn.addEventListener("click", function(){
+  if(!S.lastResult){ setStatus($("status"), "No result", true); return; }
+  try{ var a=document.createElement('a'); a.href=S.lastResult; a.download="qwen-edit-"+Date.now()+".png"; document.body.appendChild(a); a.click(); a.remove(); }
+  catch(e){ var sh=$("saveHint"); if(sh) sh.textContent="Save blocked in preview - open file directly."; }
 });
 
-$("saveResult").addEventListener("click", () => {
-  if (!S.lastResult) return;
-  try {
-    const a = document.createElement("a");
-    a.href = S.lastResult;
-    a.download = `qwen-edit-${Date.now()}.png`;
-    document.body.appendChild(a); a.click(); a.remove();
-    $("saveHint").textContent = "";
-  } catch (e) {
-    $("saveHint").textContent = "Download blocked in this preview — open the page directly in a browser to save.";
-  }
-});
-
-$("steps").addEventListener("input", () => {
-  const v = parseInt($("steps").value, 10) || 0;
-  $("stepBadge").textContent = v <= 8 ? v + "-Step Fast" : v + " steps";
-});
-
-/* ------------------------------------------------------------------ *
- *  Settings tab
- * ------------------------------------------------------------------ */
-$("applySettings").addEventListener("click", async () => {
-  S.token = $("token").value.trim();
-  const sid = $("spaceId").value.trim();
-  if (!sid) { setStatus($("settingsStatus"), "Enter a Space ID.", true); return; }
-  setStatus($("settingsStatus"), "Applying…");
-  const ok = await connectLora(sid, S.token);
-  setStatus($("settingsStatus"), ok ? "Connected as " + sid : "Failed — see status under the editor.", !ok);
-});
-
-$("disconnect").addEventListener("click", () => {
-  S.loraClient = null;
-  setConn("Not connected");
-  setStatus($("settingsStatus"), "Disconnected.");
-});
-
-/* ------------------------------------------------------------------ *
- *  Custom Space tab — discover the API and build a form from it
- * ------------------------------------------------------------------ */
-function typeOf(p) {
-  const t = String(p?.type ?? "");
-  const c = String(p?.component ?? "");
-  if (/boolean/i.test(t) || /checkbox/i.test(c)) return "boolean";
-  if (/number|integer|float/i.test(t) || /slider|number/i.test(c)) return "number";
-  if (/filepath|PIL|Image/i.test(t) || /^image/i.test(c) || /^file/i.test(c)) return "image";
-  return "string";
+// Custom + Settings
+async function connectCustom(){
+  var id=$("customSpace") && $("customSpace").value.trim();
+  if(!id){ setStatus($("customStatus"), "Enter Space ID", true); return; }
+  setStatus($("customStatus"), "Connecting...");
+  try{
+    var opts={}; if(S.token && S.token.indexOf("hf_")===0) opts.token=S.token;
+    S.customClient=await Client.connect(id, opts);
+    setStatus($("customStatus"), "Connected to "+id);
+    try{
+      var info=await S.customClient.view_api();
+      $("apiDump").textContent=JSON.stringify(info,null,2).slice(0,8000);
+      var eps=Object.keys(info && info.named_endpoints || {});
+      var sel=$("endpoint"); sel.innerHTML="";
+      if(!eps.length) sel.appendChild(new Option("No named endpoints",""));
+      else eps.forEach(function(k){ sel.appendChild(new Option(k,k)); });
+    }catch(e){ $("apiDump").textContent="Connected but could not inspect API"; }
+  }catch(e){ setStatus($("customStatus"), "Failed: "+(e && e.message || e), true); }
 }
-
-const IMG_RE = /image|img|mask|photo|reference|init/i;
-
-function buildForm(params) {
-  const host = $("genForm");
-  host.innerHTML = "";
-  params.forEach((p, i) => {
-    if (p.hidden) return;
-    const name = p.parameter_name || ("arg" + i);
-    const isImage = typeOf(p) === "image" || IMG_RE.test(name);
-    const fld = el("div", "fld");
-    const lab = el("label", "field", (p.label || name) + "  ·  " + (p.type || "any"));
-    lab.htmlFor = "cf_" + name;
-    fld.appendChild(lab);
-
-    let input;
-    if (isImage) {
-      input = el("input"); input.type = "file"; input.accept = "image/*";
-      input.multiple = true; input.id = "cf_" + name; input.dataset.kind = "image"; input.dataset.name = name;
-      if (Array.isArray(p.parameter_default)) input.multiple = true;
-    } else if (typeOf(p) === "boolean") {
-      input = el("input"); input.type = "checkbox"; input.id = "cf_" + name;
-      input.dataset.kind = "boolean"; input.dataset.name = name;
-      if (p.parameter_default) input.checked = true;
-      lab.textContent = "";
-      const wrap = el("label", "toggle");
-      wrap.append(input, document.createTextNode(" " + (p.label || name)));
-      fld.appendChild(wrap);
-      host.appendChild(fld);
-      return;
-    } else if (typeOf(p) === "number") {
-      input = el("input"); input.type = "number"; input.step = "any"; input.id = "cf_" + name;
-      input.dataset.kind = "number"; input.dataset.name = name;
-      if (p.parameter_default != null) input.value = p.parameter_default;
-    } else {
-      const long = /prompt|instruction|caption|text/i.test(name);
-      input = long ? document.createElement("textarea") : el("input");
-      if (!long) input.type = "text";
-      input.id = "cf_" + name; input.dataset.kind = "string"; input.dataset.name = name;
-      if (p.parameter_default != null && typeof p.parameter_default === "string") input.value = p.parameter_default;
-    }
-    fld.appendChild(input);
-    host.appendChild(fld);
-  });
-}
-
-async function collectForm() {
-  const inputs = [...$("genForm").querySelectorAll("[data-kind]")];
-  const payload = {};
-  for (const inp of inputs) {
-    const k = inp.dataset.kind, name = inp.dataset.name;
-    if (k === "boolean") payload[name] = inp.checked;
-    else if (k === "number") payload[name] = inp.value === "" ? (inp.parameterDefault ?? 0) : parseFloat(inp.value);
-    else if (k === "image") {
-      const files = [...inp.files];
-      const blobs = [];
-      for (const f of files) blobs.push(await toBlobFile(f));
-      payload[name] = blobs.length > 1 ? blobs : (blobs[0] ?? null);
-    } else payload[name] = inp.value;
-  }
-  return payload;
-}
-
-function toBlobFile(file) {
-  return new Promise((resolve) => {
-    const r = new FileReader();
-    r.onload = async () => {
-      try {
-        const resp = await fetch(r.result);
-        const blob = await resp.blob();
-        resolve(new File([blob], file.name || "image.png", { type: blob.type || "image/png" }));
-      } catch (_) { resolve(file); }
-    };
-    r.onerror = () => resolve(file);
-    r.readAsDataURL(file);
-  });
-}
-
-$("inspectApi").addEventListener("click", async () => {
-  const sid = $("customSpace").value.trim();
-  if (!sid) { setStatus($("customStatus"), "Enter a Space ID.", true); return; }
-  setStatus($("customStatus"), "Connecting…");
-  try {
-    const opts = { status_callback: statusCallback("customStatus") };
-    if (S.token && S.token.startsWith("hf_")) opts.token = S.token;
-    S.customClient = await Client.connect(sid, opts);
-    S.customSpaceId = sid;
-    S.apiInfo = await S.customClient.view_api();
-    $("apiDump").textContent = JSON.stringify(S.apiInfo, null, 2);
-
-    const eps = Object.keys(S.apiInfo.named_endpoints || {});
-    const sel = $("endpoint");
-    sel.innerHTML = "";
-    (eps.length ? eps : ["/predict"]).forEach((e) => {
-      const o = el("option"); o.value = e; o.textContent = e; sel.appendChild(o);
-    });
-    if (eps.length) {
-      sel.value = eps[0];
-      buildForm(S.apiInfo.named_endpoints[eps[0]].parameters || []);
-    }
-    setStatus($("customStatus"), `Connected. ${eps.length || 1} endpoint(s) found.`);
-  } catch (e) {
-    setStatus($("customStatus"), "Failed: " + (e?.message || e), true);
-  }
+var ccBtn=$("connectCustom"); if(ccBtn) ccBtn.addEventListener("click", connectCustom);
+var iaBtn=$("inspectApi"); if(iaBtn) iaBtn.addEventListener("click", async function(){
+  if(!S.customClient){ setStatus($("customStatus"), "Connect first", true); return; }
+  try{ var info=await S.customClient.view_api(); $("apiDump").textContent=JSON.stringify(info,null,2).slice(0,12000); }
+  catch(e){ setStatus($("customStatus"), "Inspect failed: "+(e && e.message || e), true); }
 });
 
-$("connectCustom").addEventListener("click", () => $("inspectApi").click());
-
-$("endpoint").addEventListener("change", () => {
-  const e = $("endpoint").value;
-  const info = S.apiInfo?.named_endpoints?.[e];
-  if (info) buildForm(info.parameters || []);
+var applyBtn=$("applySettings"); if(applyBtn) applyBtn.addEventListener("click", async function(){
+  var sid=$("spaceId") && $("spaceId").value.trim() || "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast";
+  var tok=$("token") && $("token").value.trim();
+  S.loraSpaceId=sid; S.token=tok||"";
+  try{ localStorage.setItem("hf_token", tok||""); }catch(e){}
+  setStatus($("settingsStatus"), "Applying...");
+  await connectLora(sid, tok);
+  setStatus($("settingsStatus"), "Connected to "+sid);
+});
+var discBtn=$("disconnect"); if(discBtn) discBtn.addEventListener("click", function(){
+  S.loraClient=null; S.token=""; setConn("Disconnected",""); setStatus($("settingsStatus"), "Disconnected"); var tv=$("token"); if(tv) tv.value=""; try{ localStorage.removeItem("hf_token"); }catch(e){}
 });
 
-$("runCustom").addEventListener("click", async () => {
-  if (!S.customClient || !S.apiInfo) { setStatus($("customRunStatus"), "Connect and inspect a Space first.", true); return; }
-  const ep = $("endpoint").value;
-  setStatus($("customRunStatus"), "Running…");
-  $("customOut").innerHTML = '<div class="ph">Working…</div>';
-  try {
-    const payload = await collectForm();
-    const job = S.customClient.submit(ep, payload);
-    let out = null;
-    for await (const m of job) {
-      if (m.type === "status" && m.position != null) setStatus($("customRunStatus"), "Queue position " + m.position);
-      if (m.type === "data") out = m.data;
-    }
-    renderCustomOut(out);
-    setStatus($("customRunStatus"), "Done.");
-  } catch (e) {
-    setStatus($("customRunStatus"), "Failed: " + (e?.message || e), true);
-    $("customOut").innerHTML = '<div class="ph">Error.</div>';
-  }
-});
-
-function renderCustomOut(out) {
-  const box = $("customOut");
-  box.innerHTML = "";
-  const list = Array.isArray(out) ? out : [out];
-  let shown = false;
-  const walk = (v, depth = 0) => {
-    if (depth > 4 || v == null) return;
-    if (typeof v === "string" && /^(https?:|data:image)/.test(v)) {
-      const img = el("img"); img.src = v; img.alt = "result"; box.appendChild(img); shown = true; return;
-    }
-    if (typeof v === "object") {
-      if (v.url || v.path) return walk(String(v.url || v.path), depth + 1);
-      Object.values(v).forEach((x) => walk(x, depth + 1));
-    }
-  };
-  list.forEach((v) => walk(v));
-  if (!shown) {
-    box.innerHTML = "";
-    const pre = el("pre", "api", JSON.stringify(out, null, 2));
-    pre.style.maxHeight = "420px";
-    box.appendChild(pre);
-  }
-}
-
-/* ------------------------------------------------------------------ *
- *  Boot
- * ------------------------------------------------------------------ */
-setStatus($("status"), "Not connected yet — hit Generate and it will connect for you.");
+(function init(){
+  try{
+    var saved=localStorage.getItem("hf_token");
+    if(saved){ var tv=$("token"); if(tv) tv.value=saved; S.token=saved; }
+  }catch(e){}
+  S.loraSpaceId=($("spaceId") && $("spaceId").value.trim()) || "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast";
+  connectLora(S.loraSpaceId, S.token);
+})();
 </script>
-</body>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
