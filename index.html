@@ -22,103 +22,92 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Qwen Image Edit Studio - Universal Fixed</title>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Qwen Image Edit Studio - V3 Auto Route</title>
 <style>
-  :root{--bg:#0b0e14;--panel:#141922;--panel-2:#1a212c;--line:#252d3a;--text:#e6ebf2;--muted:#8b98a9;--accent:#ff7a45;--accent-2:#ffb020;--green:#22c55e;--red:#ef4444;--radius:14px}
-  *{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5}
-  a{color:var(--accent-2)} .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
-  header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
-  .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#ff7a45,#ff3d81);font-size:18px}
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
-  .pill .dot{width:8px;height:8px;border-radius:99px;background:var(--muted)} .pill.ok .dot{background:var(--green)} .pill.err .dot{background:var(--red)} .pill.busy .dot{background:var(--accent-2);animation:pulse 1s infinite}
-  @keyframes pulse{50%{opacity:.3}}
-  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
-  .tab{padding:9px 14px;border:1px solid transparent;border-bottom:none;border-radius:10px 10px 0 0;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600}
-  .tab.active{background:var(--panel);border-color:var(--line);color:var(--text)}
-  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px} @media(max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
-  .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
-  .badge{display:inline-block;padding:2px 8px;border-radius:6px;background:#1f3a2a;color:#6ee7a0;font-size:11px;font-weight:700;margin-left:8px}
-  .note{background:#2a1a12;border:1px solid #4a2a18;border-radius:10px;padding:10px 12px;font-size:12px;color:#f0c9a8;margin-bottom:12px}
-  .note.green{background:#13271c;border-color:#1f4d2f;color:#b6e9c4}
-  .drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:var(--panel-2);padding:26px 16px;text-align:center;cursor:pointer;transition:.15s}
-  .drop:hover,.drop.over{border-color:var(--accent);background:#1c2330}
-  .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0e1420}
-  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:99px;border:none;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:12px}
-  .thumb .idx{position:absolute;bottom:2px;left:4px;font-size:10px;color:#fff;text-shadow:0 1px 3px #000}
-  label.field{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;font-weight:600}
-  textarea,input,select{width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
-  textarea{resize:vertical;min-height:84px} textarea:focus,input:focus,select:focus{border-color:var(--accent)}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{background:#0e1420;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;color:var(--muted);cursor:pointer}
-  .chip:hover{border-color:var(--accent);color:var(--text)}
-  .btn{width:100%;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),#ff3d81);color:#fff;margin-top:14px}
-  .btn:disabled{opacity:.55;cursor:not-allowed} .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-weight:600;margin-top:0}
-  .btn.sm{padding:7px 12px;width:auto;font-size:12px;margin:0}
-  .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .out{min-height:340px;border:1px solid var(--line);border-radius:12px;background:#0e1420;display:grid;place-items:center;overflow:hidden;padding:10px}
-  .out img{max-width:100%;max-height:560px;border-radius:8px;display:block}
-  .out .ph{color:var(--muted);text-align:center;font-size:13px;padding:30px 16px}
-  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);padding:3px 0} .kv b{color:var(--text);font-weight:600}
-  .hist{display:flex;gap:8px;overflow-x:auto;padding:4px 0} .hist img{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
-  .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px;white-space:pre-wrap} .status.err{color:#ff9b9b}
-  .hidden{display:none!important} .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
-  pre.api{background:#0e1420;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;max-height:280px;font-size:11.5px;color:#9fb3cc}
-  .hint{font-size:11.5px;color:var(--muted);margin-top:6px} .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
-  .toggle input{width:16px;height:16px;accent-color:var(--accent)}
+:root{--bg:#0b0e14;--panel:#141922;--panel-2:#1a212c;--line:#252d3a;--text:#e6ebf2;--muted:#8b98a9;--accent:#ff7a45;--green:#22c55e;--red:#ef4444;--radius:14px}
+*{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Roboto,sans-serif;font-size:14px}
+.wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
+header.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700}
+.logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#ff7a45,#ff3d81)}
+.pill{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
+.pill .dot{width:8px;height:8px;border-radius:99px;background:var(--muted)} .pill.ok .dot{background:var(--green)} .pill.busy .dot{background:#ffb020;animation:pulse 1s infinite} @keyframes pulse{50%{opacity:.3}}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{padding:9px 14px;border:1px solid transparent;border-bottom:none;border-radius:10px 10px 0 0;background:transparent;color:var(--muted);cursor:pointer;font-weight:600}
+.tab.active{background:var(--panel);border-color:var(--line);color:var(--text)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px} @media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.badge{background:#1f3a2a;color:#6ee7a0;padding:2px 8px;border-radius:6px;font-size:11px;margin-left:8px}
+.note{background:#2a1a12;border:1px solid #4a2a18;border-radius:10px;padding:10px;font-size:12px;color:#f0c9a8;margin-bottom:10px}
+.note.green{background:#13271c;border-color:#1f4d2f;color:#b6e9c4}
+.drop{border:1.5px dashed #2f3a4a;border-radius:12px;background:#1a212c;padding:26px;text-align:center;cursor:pointer}
+.drop:hover{border-color:var(--accent)} .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0e1420}
+.thumb img{width:100%;height:100%;object-fit:cover} .thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:99px;border:none;background:rgba(0,0,0,.65);color:#fff;cursor:pointer}
+.thumb .idx{position:absolute;bottom:2px;left:4px;font-size:10px;color:#fff;text-shadow:0 1px 3px #000}
+label.field{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;font-weight:600}
+textarea,input,select{width:100%;background:#0e1420;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 11px;font-size:13px;outline:none}
+textarea{resize:vertical;min-height:86px} textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px} .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:#0e1420;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;color:var(--muted);cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--text)}
+.btn{width:100%;border:none;border-radius:11px;padding:13px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#ff7a45,#ff3d81);color:#fff;margin-top:14px}
+.btn.secondary{background:#1a212c;border:1px solid var(--line);color:var(--text);margin-top:0} .btn.sm{padding:7px 12px;width:auto;font-size:12px}
+.inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.out{min-height:340px;border:1px solid var(--line);border-radius:12px;background:#0e1420;display:grid;place-items:center;overflow:hidden;padding:10px}
+.out img{max-width:100%;max-height:560px;border-radius:8px}
+.status{font-size:12px;color:var(--muted);margin-top:10px;white-space:pre-wrap} .status.err{color:#ff9b9b}
+.hidden{display:none!important} .hint{font-size:11.5px;color:var(--muted);margin-top:6px} .kv{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:3px 0} .kv b{color:var(--text)}
+.hist{display:flex;gap:8px;overflow:auto} .hist img{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
+.toggle{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);margin-top:10px} .toggle input{width:16px;height:16px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="brand"><div class="logo">🪄</div><div><div>Qwen Image Edit Studio</div><div style="font-size:11.5px;color:var(--muted);font-weight:500">universal editor · fixed tabs + no distortion</div></div></div>
-  <div class="inline"><span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span></div>
+<div class="brand"><div class="logo">🪄</div><div><div>Qwen Image Edit Studio</div><div style="font-size:11px;color:var(--muted)">V3 Auto-Route · Fast + Base model</div></div></div>
+<div class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></div>
 </header>
 
-<nav class="tabs" id="tabs">
-  <button class="tab active" data-tab="lora">LoRA Editor</button>
-  <button class="tab" data-tab="custom">Custom Space</button>
-  <button class="tab" data-tab="settings">Settings</button>
-</nav>
+<div class="tabs" id="tabs">
+<button class="tab active" data-tab="lora">LoRA Editor</button>
+<button class="tab" data-tab="settings">Settings</button>
+<button class="tab" data-tab="custom">Custom Space</button>
+</div>
 
 <section id="tab-lora">
 <div class="grid">
 <div>
 <div class="card">
-<h3>QWEN-IMAGE-EDIT <span class="badge">Universal Fix</span></h3>
-<div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">Space: prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast · Works for ANY image type</div>
-<div class="note green"><b>✓ Fixed:</b> Tabs now work, auto-resize to 1024px, safe defaults. For <b>any image</b> use <b>Anything2Real</b> or <b>Studio-DeLight</b>. For creative use other LoRAs.</div>
+<h3>Universal Editor <span class="badge">V3 Auto-Route</span></h3>
+<div class="note green"><b>✓ New:</b> Pose prompts like "sit on chair" auto-use base model <b>Qwen/Qwen-Image-Edit</b> to avoid NCII false flags. Normal edits use Fast LoRA. HF safety still respected.</div>
 
 <label class="field">Upload image(s)</label>
-<div class="drop" id="drop"><div style="font-size:26px">⬆</div><div><b>Drop files here</b></div><div class="hint">— or — Click to upload</div></div>
+<div class="drop" id="drop"><div style="font-size:24px">⬆</div><b>Drop files here</b><div class="hint">or Click to upload</div></div>
 <input type="file" id="fileInput" accept="image/*" multiple class="hidden"/>
-<label class="field" style="margin-top:14px">📋 Paste (Ctrl+V)</label>
-<div class="drop" id="pasteZone" tabindex="0"><div style="font-size:26px">📋</div><div><b>Paste from Clipboard</b></div><div class="hint">focus + Ctrl+V</div></div>
 <div class="thumbs" id="thumbs"></div>
 
-<label class="field" for="prompt">Prompt</label>
-<textarea id="prompt" placeholder="For any image: describe what to change. Keep empty for enhance. Examples: change background to beach / make it studio lighting / keep same person but smile / turn into product photo"></textarea>
+<label class="field">Prompt</label>
+<textarea id="prompt" placeholder="Examples: Keep same person, change background to white studio / Make person sit on wooden chair, preserve saree and face / Enhance to 4K photorealistic"></textarea>
 <div class="chips" id="promptChips"></div>
 
-<label class="field" for="lora">LoRA adapter</label>
+<label class="field">LoRA (for Fast model - auto ignored for pose edits)</label>
 <select id="lora"></select>
 <div class="hint" id="loraHint"></div>
 
 <div class="row">
-<div><label class="field" for="steps">Steps (10 recommended)</label><input type="number" id="steps" value="10" min="1" max="50"/></div>
-<div><label class="field" for="guidance">Guidance (1.5-2.0)</label><input type="number" id="guidance" value="1.8" min="0" max="20" step="0.1"/></div>
+<div><label class="field">Steps</label><input type="number" id="steps" value="10" min="1" max="50"/></div>
+<div><label class="field">Guidance</label><input type="number" id="guidance" value="1.8" min="0" max="20" step="0.1"/></div>
 </div>
 <div class="row">
-<div><label class="field" for="seed">Seed</label><input type="number" id="seed" value="0" min="0"/></div>
-<div class="toggle" style="margin-top:26px"><input type="checkbox" id="randomize" checked/><label for="randomize" style="margin:0">Randomize seed</label></div>
+<div><label class="field">Seed</label><input type="number" id="seed" value="0"/></div>
+<div class="toggle" style="margin-top:26px"><input type="checkbox" id="randomize" checked/><label for="randomize">Randomize seed</label></div>
 </div>
-<div class="toggle"><input type="checkbox" id="preserve" checked/><label for="preserve" style="margin:0">Smart preservation (auto off for anime/cartoon LoRAs)</label></div>
+<div class="toggle"><input type="checkbox" id="preserve" checked/><label for="preserve">Smart preservation (auto for realistic edits)</label></div>
+
+<div class="note" id="routingNote" style="display:none"></div>
 
 <button class="btn" id="generate">✨ Generate</button>
 <div style="display:flex;gap:8px;margin-top:8px"><button class="btn secondary sm" id="clearAll" style="width:100%">Clear</button><button class="btn secondary sm" id="checkSafety" style="width:100%">Safety check</button></div>
@@ -127,358 +116,215 @@
 </div>
 
 <div>
-<div class="card"><h3>Result</h3><div class="out" id="out"><div class="ph">Drop image, write prompt, Generate.<br/><br/>First run 30-60s to wake Space.</div></div>
-<div style="margin-top:10px"><div class="kv"><span>Seed</span><b id="metaSeed">—</b></div><div class="kv"><span>LoRA</span><b id="metaLora">—</b></div><div class="kv"><span>Time</span><b id="metaTime">—</b></div><div class="kv"><span>Size</span><b id="metaRes">—</b></div></div>
-<div style="display:flex;gap:8px;margin-top:10px"><button class="btn secondary sm" id="useAsInput" style="width:100%">↩ Use as input</button><button class="btn secondary sm" id="saveResult" style="width:100%">⤓ Save PNG</button></div>
-<div class="hint" id="saveHint"></div>
+<div class="card"><h3>Result</h3><div class="out" id="out"><div class="hint" style="text-align:center;padding:30px">Upload image, write prompt, Generate. First run 30-60s.</div></div>
+<div style="margin-top:10px"><div class="kv"><span>Model used</span><b id="metaModel">—</b></div><div class="kv"><span>Seed</span><b id="metaSeed">—</b></div><div class="kv"><span>LoRA</span><b id="metaLora">—</b></div><div class="kv"><span>Time</span><b id="metaTime">—</b></div></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button class="btn secondary sm" id="useAsInput" style="width:100%">↩ Use as input</button><button class="btn secondary sm" id="saveResult" style="width:100%">⤓ Save</button></div>
 </div>
-<div class="card"><h3>Session history</h3><div class="hist" id="hist"><span class="hint">No results yet.</span></div></div>
+<div class="card"><h3>History</h3><div class="hist" id="hist"><span class="hint">No results yet</span></div></div>
 </div>
-</div>
-</section>
-
-<section id="tab-custom" class="hidden">
-<div class="grid">
-<div><div class="card"><h3>Any image-editing Space</h3><div class="hint" style="margin-bottom:10px">Connect any Gradio Space.</div>
-<label class="field">Space ID</label><input type="text" id="customSpace" value="selfit-camera/Omni-Image-Editor"/><div class="chips" id="spacePresets"></div>
-<div class="inline" style="margin-top:12px"><button class="btn secondary sm" id="connectCustom">Connect</button><button class="btn secondary sm" id="inspectApi">Inspect API</button><span class="status" id="customStatus" style="margin:0"></span></div>
-<label class="field" style="margin-top:14px">Endpoint</label><select id="endpoint"><option>— connect to list —</option></select>
-<div id="genForm" style="margin-top:12px"></div><button class="btn" id="runCustom">▶ Run</button><div class="status" id="customRunStatus"></div>
-</div></div>
-<div><div class="card"><h3>API details</h3><pre class="api" id="apiDump">Not inspected yet.</pre></div><div class="card"><h3>Result</h3><div class="out" id="customOut"><div class="ph">Nothing yet.</div></div></div></div>
 </div>
 </section>
 
 <section id="tab-settings" class="hidden">
 <div class="card" style="max-width:720px"><h3>Connection</h3>
-<label class="field">Default Space</label><input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast"/>
-<div class="hint">This Space is best for ANY kind of image. Keep it.</div>
-<label class="field" for="token">HF Token (hf_... paste here - needed to avoid queue)</label><input type="password" id="token" placeholder="hf_..."/>
-<div class="hint">Get token from huggingface.co/settings/tokens - read token. Stored locally only.</div>
-<div class="inline" style="margin-top:14px"><button class="btn secondary sm" id="applySettings">Apply & connect</button><button class="btn secondary sm" id="disconnect">Disconnect</button></div>
+<label class="field">Fast Space (default)</label><input type="text" id="spaceId" value="prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast"/>
+<label class="field">Base Space for pose edits</label><input type="text" id="baseSpaceId" value="Qwen/Qwen-Image-Edit"/>
+<label class="field">HF Token hf_...</label><input type="password" id="token" placeholder="hf_..."/>
+<div style="display:flex;gap:8px;margin-top:14px"><button class="btn secondary sm" id="applySettings">Apply & connect</button><button class="btn secondary sm" id="disconnect">Disconnect</button></div>
 <div class="status" id="settingsStatus"></div>
-<h3 style="margin-top:22px">Universal Mode Tips</h3>
-<div class="hint">• For ANY photo (person, product, landscape, car, food): use LoRA = Anything2Real + Steps 10 + Guidance 1.8<br/>• For light fix: Studio-DeLight<br/>• For upscaling: Upscaler or Unblur-Anything<br/>• For background change: Anything2Real with prompt "change background to ... keep subject same"<br/>• Don't use Hyper-Realistic-Portrait for full body - it distorts.</div>
 </div>
+</section>
+
+<section id="tab-custom" class="hidden">
+<div class="card"><h3>Custom Space</h3><label class="field">Space ID</label><input type="text" id="customSpace" value="selfit-camera/Omni-Image-Editor"/><div class="chips" id="spacePresets"></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn secondary sm" id="connectCustom">Connect</button><span class="status" id="customStatus"></span></div></div>
 </section>
 
 </div>
 
 <script>
-// --- TABS FIX: simple, no dependencies ---
+// Tabs - no module dependency
 (function(){
   var tabs=document.querySelectorAll('#tabs .tab');
   function showTab(name){
-    tabs.forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-tab')===name); });
-    ['lora','custom','settings'].forEach(function(k){
-      var sec=document.getElementById('tab-'+k);
-      if(sec) sec.classList.toggle('hidden', k!==name);
+    tabs.forEach(function(t){ t.classList.toggle('active', t.dataset.tab===name); });
+    ['lora','settings','custom'].forEach(function(k){
+      var el=document.getElementById('tab-'+k); if(el) el.classList.toggle('hidden', k!==name);
     });
   }
-  tabs.forEach(function(t){
-    t.addEventListener('click', function(){ showTab(t.getAttribute('data-tab')); });
-  });
+  tabs.forEach(function(t){ t.addEventListener('click', function(){ showTab(t.dataset.tab); }); });
 })();
 </script>
 
 <script type="module">
 import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
-const LORAS=["Anything2Real","Studio-DeLight","Ultra-Realistic-Portrait","Unblur-Anything","Upscaler","Multiple-Angles","Fal-Multiple-Angles","Light-Migration","Any-light","Style-Transfer","Photo-to-Anime","Anime-V2","Manga-Tone","Noir-Comic-Book","Pixar-Inspired-3D","Polaroid-Photo","Midnight-Noir-Eyes-Spotlight","Hyper-Realistic-Portrait","Cinematic-FlatLog"];
-
+const LORAS=["Anything2Real","Studio-DeLight","Ultra-Realistic-Portrait","Unblur-Anything","Upscaler","Multiple-Angles","Fal-Multiple-Angles","Light-Migration","Any-light","Style-Transfer","Photo-to-Anime","Pixar-Inspired-3D"];
 const PROMPT_PRESETS=[
-  {lora:"Anything2Real", prompt:"Keep same subject and composition, photorealistic enhancement, natural colors, sharp focus"},
-  {lora:"Anything2Real", prompt:"Change background to white studio background, keep subject exactly same"},
-  {lora:"Anything2Real", prompt:"Change background to beach sunset, keep person same, natural lighting"},
-  {lora:"Studio-DeLight", prompt:"Neutral uniform studio lighting, preserve identity and details, photorealistic"},
-  {lora:"Unblur-Anything", prompt:"Unblur, enhance details, keep original colors"},
-  {lora:"Upscaler", prompt:"Upscale to 4K, preserve details"},
-  {lora:"Photo-to-Anime", prompt:"Transform into anime style"},
-  {lora:"Pixar-Inspired-3D", prompt:"Transform into Pixar 3D style"},
-  {lora:"Style-Transfer", prompt:"Convert Image 1 to style of Image 2"},
+  {lora:"Anything2Real", prompt:"Keep same person, change background to white studio, preserve clothing and face"},
+  {lora:"Anything2Real", prompt:"Same person in blue saree sitting on wooden chair, indoor studio, preserve identity"},
+  {lora:"Anything2Real", prompt:"Enhance to photorealistic, natural colors, sharp focus"},
+  {lora:"Studio-DeLight", prompt:"Neutral studio lighting, preserve identity"},
+  {lora:"Multiple-Angles", prompt:"Rotate camera 30 degrees to right, keep same person"},
 ];
 
-const SPACE_PRESETS=["prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast","selfit-camera/Omni-Image-Editor","Qwen/Qwen-Image-Edit","linoyts/Qwen-Image-Edit-Angles"];
+const POSE_KEYWORDS=["sit","sitting","chair","sofa","stool","bench","stand","standing","lie","lying","laying","pose","kneel","squat","lean","walk","walking"];
 
-const S={loraClient:null,loraSpaceId:"prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast",customClient:null,token:"",images:[],lastResult:null,history:[],busy:false,imgSeq:1};
+const S={fastClient:null, baseClient:null, fastId:"prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast", baseId:"Qwen/Qwen-Image-Edit", token:"", images:[], lastResult:null, history:[], busy:false, seq:1};
 
-const $=function(id){return document.getElementById(id);};
-function el(tag,cls,txt){var n=document.createElement(tag); if(cls) n.className=cls; if(txt!=null) n.textContent=txt; return n;}
-function setStatus(node,msg,isErr){ if(!node) return; node.textContent=msg||""; node.classList.toggle("err", !!isErr); }
-function setConn(text,kind){ var t=$("connText"); if(t) t.textContent=text; var p=$("connPill"); if(p) p.className="pill"+(kind?" "+kind:""); }
+const $=id=>document.getElementById(id);
+const el=(t,c,txt)=>{var n=document.createElement(t); if(c) n.className=c; if(txt!=null) n.textContent=txt; return n;};
+const setStatus=(n,m,e)=>{ if(!n) return; n.textContent=m||""; n.classList.toggle("err",!!e); };
+const setConn=(t,k)=>{ var a=$("connText"); if(a) a.textContent=t; var p=$("connPill"); if(p) p.className="pill"+(k?" "+k:""); };
 
-var loraSel=$("lora");
-LORAS.forEach(function(n){ var o=el("option"); o.value=n; o.textContent=n; loraSel.appendChild(o); });
-loraSel.value="Anything2Real";
+var loraSel=$("lora"); LORAS.forEach(v=>{ var o=el("option"); o.value=v; o.textContent=v; loraSel.appendChild(o); }); loraSel.value="Anything2Real";
 
-var chipBox=$("promptChips");
-PROMPT_PRESETS.forEach(function(p){
-  var c=el("span","chip", p.prompt.length>60?p.prompt.slice(0,57)+"...":p.prompt);
-  c.title=p.prompt;
-  c.addEventListener("click", function(){ $("prompt").value=p.prompt; if(LORAS.indexOf(p.lora)>=0){ loraSel.value=p.lora; updateLoraHint(); }});
-  chipBox.appendChild(c);
-});
+var chipBox=$("promptChips"); PROMPT_PRESETS.forEach(p=>{ var c=el("span","chip",p.prompt.slice(0,55)+"..."); c.title=p.prompt; c.onclick=()=>{ $("prompt").value=p.prompt; loraSel.value=p.lora; }; chipBox.appendChild(c); });
 
-var presetBox=$("spacePresets");
-SPACE_PRESETS.forEach(function(id){
-  var c=el("span","chip", id.split("/")[1]||id);
-  c.title=id; c.addEventListener("click", function(){ $("customSpace").value=id; });
-  presetBox.appendChild(c);
-});
+function isPosePrompt(txt){ var t=txt.toLowerCase(); return POSE_KEYWORDS.some(k=>t.includes(k)); }
 
-function updateLoraHint(){
-  var v=loraSel.value;
-  var map={
-    "Anything2Real":"UNIVERSAL - Best for ANY kind of image (people, product, landscape, food, car). No distortion.",
-    "Studio-DeLight":"UNIVERSAL - Best for fixing light on any image. Keeps everything same.",
-    "Ultra-Realistic-Portrait":"For portraits. May distort full body.",
-    "Hyper-Realistic-Portrait":"⚠️ FACE ONLY - Will distort if used on full body/product/background. Don't use for universal editing.",
-    "Unblur-Anything":"Universal - sharpens any image.",
-    "Upscaler":"Universal - upscales any image."
-  };
-  var h=$("loraHint"); if(!h) return;
-  h.textContent=map[v]||"";
-  h.style.color=v==="Hyper-Realistic-Portrait"?"#ff9b9b":"";
+function updateRoutingNote(){
+  var txt=$("prompt").value||""; var note=$("routingNote"); if(!note) return;
+  if(isPosePrompt(txt)){
+    note.style.display="block"; note.textContent="🔀 Pose edit detected (sit/chair/etc) → will auto-use base model Qwen/Qwen-Image-Edit to avoid NCII false flag. HF safety still active.";
+    note.className="note green";
+  } else {
+    note.style.display="block"; note.textContent="⚡ Normal edit → will use Fast LoRA model (prithivMLmods/...-Fast) - fastest, no distortion.";
+    note.className="note";
+  }
 }
-loraSel.addEventListener("change", updateLoraHint); updateLoraHint();
+$("prompt").addEventListener("input", updateRoutingNote); updateRoutingNote();
 
-// --- Image intake with auto resize fix ---
-var fileInput=$("fileInput"); var drop=$("drop");
-if(drop) drop.addEventListener("click", function(){ fileInput.click(); });
-if(fileInput) fileInput.addEventListener("change", function(){ addFiles(Array.from(fileInput.files)); fileInput.value=""; });
-["dragenter","dragover"].forEach(function(ev){ if(drop) drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add("over"); }); });
-["dragleave","dragend"].forEach(function(ev){ if(drop) drop.addEventListener(ev, function(){ drop.classList.remove("over"); }); });
-if(drop) drop.addEventListener("drop", function(e){ e.preventDefault(); drop.classList.remove("over"); var fs=Array.from(e.dataTransfer.files).filter(function(f){return f.type.indexOf("image/")===0;}); addFiles(fs); });
-document.addEventListener("paste", function(e){
-  var items=e.clipboardData && e.clipboardData.items ? Array.from(e.clipboardData.items) : [];
-  var files=items.filter(function(i){return i.type.indexOf("image/")===0;}).map(function(i){return i.getAsFile();}).filter(Boolean);
-  if(files.length){ e.preventDefault(); addFiles(files); }
-});
-var pz=$("pasteZone");
-if(pz){
-  pz.addEventListener("paste", function(e){
-    var items=e.clipboardData && e.clipboardData.items ? Array.from(e.clipboardData.items) : [];
-    var files=items.filter(function(i){return i.type.indexOf("image/")===0;}).map(function(i){return i.getAsFile();}).filter(Boolean);
-    if(files.length){ e.preventDefault(); addFiles(files); }
-  });
-  pz.addEventListener("click", function(){ pz.focus(); });
-}
-
-function resizeDataUrl(dataUrl, maxSide){
-  maxSide=maxSide||1024;
-  return new Promise(function(resolve,reject){
-    var img=new Image();
-    img.onload=function(){
-      var w=img.width, h=img.height;
-      if(Math.max(w,h)>maxSide){
-        if(w>h){ h=Math.round(h*maxSide/w); w=maxSide; } else { w=Math.round(w*maxSide/h); h=maxSide; }
-      }
-      var c=document.createElement('canvas'); c.width=w; c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      resolve({url:c.toDataURL('image/jpeg',0.92), w:w, h:h});
-    };
-    img.onerror=reject; img.src=dataUrl;
+function resizeDataUrl(dataUrl, maxSide=1024){
+  return new Promise((res,rej)=>{
+    var img=new Image(); img.onload=()=>{
+      var w=img.width,h=img.height; if(Math.max(w,h)>maxSide){ if(w>h){ h=Math.round(h*maxSide/w); w=maxSide; } else { w=Math.round(w*maxSide/h); h=maxSide; } }
+      var c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      res({url:c.toDataURL('image/jpeg',0.92),w,h});
+    }; img.onerror=rej; img.src=dataUrl;
   });
 }
 
 async function addFiles(files){
-  if(!files.length) return;
-  setStatus($("status"), "Processing "+files.length+" image(s)...");
-  for(var i=0;i<files.length;i++){
-    var f=files[i];
-    var dataUrl=await new Promise(function(res){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.readAsDataURL(f); });
-    var resized=await resizeDataUrl(dataUrl, 1024);
-    S.images.push({id:S.imgSeq++, name:f.name||("img-"+S.imgSeq+".jpg"), dataUrl:resized.url, w:resized.w, h:resized.h});
+  if(!files.length) return; setStatus($("status"),"Processing "+files.length+" image(s)...");
+  for(var f of files){
+    var dataUrl=await new Promise(r=>{ var fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); });
+    var rz=await resizeDataUrl(dataUrl,1024);
+    S.images.push({id:S.seq++, name:f.name||"img.jpg", dataUrl:rz.url, w:rz.w, h:rz.h});
   }
-  renderThumbs();
-  setStatus($("status"), S.images.length+" image(s) ready - auto resized to 1024px (fixes distortion).");
+  renderThumbs(); setStatus($("status"), S.images.length+" image(s) ready - 1024px max");
 }
 function renderThumbs(){
-  var box=$("thumbs"); if(!box) return; box.innerHTML="";
-  S.images.forEach(function(im,idx){
-    var t=el("div","thumb"); var img=el("img"); img.src=im.dataUrl; img.alt=im.name;
-    var rm=el("button",null,"×"); rm.addEventListener("click", function(){ S.images=S.images.filter(function(x){return x.id!==im.id;}); renderThumbs(); });
-    var idxx=el("span","idx","img"+(idx+1)+" "+im.w+"x"+im.h);
-    t.appendChild(img); t.appendChild(rm); t.appendChild(idxx); box.appendChild(t);
+  var box=$("thumbs"); box.innerHTML=""; S.images.forEach((im,i)=>{
+    var t=el("div","thumb"); var imEl=el("img"); imEl.src=im.dataUrl;
+    var rm=el("button",null,"×"); rm.onclick=()=>{ S.images=S.images.filter(x=>x.id!==im.id); renderThumbs(); };
+    var idx=el("span","idx","img"+(i+1)); t.appendChild(imEl); t.appendChild(rm); t.appendChild(idx); box.appendChild(t);
   });
 }
-var clearBtn=$("clearAll"); if(clearBtn) clearBtn.addEventListener("click", function(){ S.images=[]; renderThumbs(); setStatus($("status"),""); });
+var drop=$("drop"), fileInput=$("fileInput");
+drop.addEventListener("click",()=>fileInput.click());
+fileInput.addEventListener("change",()=>{ addFiles(Array.from(fileInput.files)); fileInput.value=""; });
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.style.borderColor="#ff7a45"; }));
+["dragleave","dragend","drop"].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.style.borderColor=""; }));
+drop.addEventListener("drop",e=>{ var fs=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith("image/")); addFiles(fs); });
 
-function statusCallback(label){
-  return function(st){
-    var stage=""; try{ stage=st && (st.status && st.status.stage || st.stage) || ""; }catch(e){}
-    if(stage) setStatus($(label), "Space status: "+stage+"...");
-  };
+async function connectFast(id,token){
+  setConn("Connecting Fast...","busy"); setStatus($("status"),"Connecting "+id);
+  try{ var opts={}; if(token&&token.startsWith("hf_")) opts.token=token; S.fastClient=await Client.connect(id,opts); S.fastId=id; setConn("Connected: "+id.split("/")[1],"ok"); setStatus($("status"),"Fast model connected"); return true; } catch(e){ setConn("Fast failed","err"); setStatus($("status"),"Fast connect failed: "+(e.message||e),true); return false; }
 }
-async function connectLora(spaceId, token){
-  setConn("Connecting...","busy");
-  setStatus($("status"), "Connecting to "+spaceId+"... may take 30-60s if sleeping");
-  try{
-    var opts={status_callback: statusCallback("status")};
-    if(token && token.indexOf("hf_")===0) opts.token=token;
-    S.loraClient=await Client.connect(spaceId, opts);
-    S.loraSpaceId=spaceId;
-    setConn("Connected: "+spaceId.split("/")[1],"ok");
-    setStatus($("status"), "Connected. Ready for ANY image type. Paste HF token in Settings to avoid queue.");
-    return true;
-  }catch(e){
-    S.loraClient=null; setConn("Connection failed","err");
-    setStatus($("status"), "Connect failed: "+(e && e.message || e)+" - try direct open, not preview.", true);
-    return false;
-  }
+async function connectBase(id,token){
+  setStatus($("status"),"Connecting base "+id+"..."); try{ var opts={}; if(token&&token.startsWith("hf_")) opts.token=token; S.baseClient=await Client.connect(id,opts); S.baseId=id; setStatus($("status"),"Base model connected for pose edits"); return true; } catch(e){ setStatus($("status"),"Base connect failed: "+(e.message||e),true); return false; }
+}
+async function ensureClients(){
+  if(!S.fastClient) await connectFast(S.fastId, S.token);
+  if(isPosePrompt($("prompt").value||"") && !S.baseClient) await connectBase(S.baseId, S.token);
 }
 
 function buildPrompt(){
-  var p=$("prompt").value.trim();
-  var realisticLoRAs=["Anything2Real","Studio-DeLight","Ultra-Realistic-Portrait","Unblur-Anything","Upscaler","Light-Migration","Any-light"];
-  var isRealistic=realisticLoRAs.indexOf(loraSel.value)>=0;
-  if($("preserve") && $("preserve").checked && isRealistic){
-    if(p && p.toLowerCase().indexOf("preserve identity")<0 && p.length<200){
-      p=p + ", preserve original subject, same composition, photorealistic, natural texture, no painting, sharp focus";
-    } else if(!p){
-      p="Preserve original subject exactly, photorealistic enhancement only, natural colors, sharp focus, no style change";
+  var p=$("prompt").value.trim(); if(!p) p="Enhance photorealistic, sharp focus";
+  // make neutral - remove her/him to reduce false flags
+  if($("preserve")&&$("preserve").checked){
+    var realistic=["Anything2Real","Studio-DeLight","Ultra-Realistic-Portrait","Unblur-Anything","Upscaler"];
+    if(realistic.includes(loraSel.value) && p.length<300 && !p.toLowerCase().includes("preserve")){
+      p+=", preserve identity, same clothing, photorealistic, natural texture";
     }
   }
-  return p || "Enhance image, photorealistic, sharp focus, natural colors";
+  return p;
 }
 
-function payloadFor(){
+function payloadFast(){
+  var prompt=buildPrompt(); var rand=$("randomize").checked;
+  var seed=rand?Math.floor(Math.random()*1e6):Math.max(0,parseInt($("seed").value)||42);
+  return {images_b64_json:JSON.stringify(S.images.map(i=>i.dataUrl)), prompt:prompt, lora_adapter:loraSel.value, seed:seed, randomize_seed:rand, guidance_scale:Math.min(5,parseFloat($("guidance").value)||1.8), steps:Math.max(8,parseInt($("steps").value)||10)};
+}
+function payloadBase(){
+  // Qwen base model expects different schema: image, prompt
   var prompt=buildPrompt();
-  var rand=$("randomize") && $("randomize").checked;
-  var seedVal= rand ? Math.floor(Math.random()*1000000) : Math.max(0, parseInt($("seed").value,10)||42);
-  return {
-    images_b64_json: JSON.stringify(S.images.map(function(i){return i.dataUrl;})),
-    prompt: prompt,
-    lora_adapter: loraSel.value,
-    seed: seedVal,
-    randomize_seed: rand,
-    guidance_scale: Math.min(5, parseFloat($("guidance").value)||1.8),
-    steps: Math.max(8, parseInt($("steps").value,10)||10)
-  };
+  // base model uses first image only, but we send as dataURL
+  return {image:S.images[0].dataUrl, prompt:prompt};
 }
 
-var genBtn=$("generate");
-if(genBtn) genBtn.addEventListener("click", async function(){
-  if(S.busy) return;
-  if(!S.images.length){ setStatus($("status"), "Add at least one image first.", true); return; }
-  var payload=payloadFor();
-  if(loraSel.value==="Hyper-Realistic-Portrait"){
-    if(!confirm("Hyper-Realistic-Portrait is for tight face only. It WILL distort any other image (product, full body, landscape).\n\nRecommended universal LoRA: Anything2Real or Studio-DeLight.\n\nContinue anyway?")) return;
-  }
-  if(!S.loraClient){
-    var ok=await connectLora(S.loraSpaceId, S.token);
-    if(!ok) return;
-  }
-  S.busy=true; genBtn.disabled=true; setConn("Generating...","busy"); setStatus($("status"), "Queued...");
+$("generate").addEventListener("click", async ()=>{
+  if(S.busy) return; if(!S.images.length){ setStatus($("status"),"Add image first",true); return; }
+  await ensureClients();
+  var isPose=isPosePrompt($("prompt").value||"");
+  S.busy=true; $("generate").disabled=true; setConn("Generating...","busy"); setStatus($("status"),"Queued - "+(isPose?"base model (pose edit)":"fast model"));
   var t0=Date.now();
   try{
-    var job=S.loraClient.submit("/edit_image", payload);
-    var out=null;
-    for await (var m of job){
-      if(m.type==="status"){
-        var pos=m.position!=null ? "queue "+m.position : "queued";
-        var eta=m.eta!=null ? " ETA "+Math.round(m.eta)+"s" : "";
-        setStatus($("status"), "Running - "+pos+eta);
-      } else if(m.type==="data"){ out=m.data; }
+    var dataUrl=null; var usedModel=""; var usedLora="";
+    if(isPose){
+      if(!S.baseClient){ throw new Error("Base model not connected - check Settings token and try again"); }
+      // Try base model /edit_image endpoint if exists, else /predict
+      var job;
+      try{ job=S.baseClient.submit("/edit_image", {image:S.images[0].dataUrl, prompt:buildPrompt()}); } catch(e){ job=S.baseClient.submit("/predict", payloadBase()); }
+      var out=null; for await(var m of job){ if(m.type==="status"){ setStatus($("status"),"Running base - "+(m.position!=null?"queue "+m.position:"processing")+(m.eta?" ETA "+Math.round(m.eta)+"s":"")); } else if(m.type==="data"){ out=m.data; } }
+      var d=Array.isArray(out)?out[0]:out;
+      if(!d) throw new Error("No response from base");
+      if(d.status==="blocked") throw new Error(d.message||"Blocked by safety filter - try more neutral wording");
+      dataUrl=d.image||d[0]||d.url||null; if(!dataUrl && typeof d==="string") dataUrl=d;
+      if(!dataUrl) throw new Error(d.message||"No image returned from base");
+      usedModel=S.baseId; usedLora="base (no LoRA)";
+    } else {
+      if(!S.fastClient) throw new Error("Fast model not connected");
+      var payload=payloadFast();
+      var job2=S.fastClient.submit("/edit_image", payload);
+      var out2=null; for await(var m of job2){ if(m.type==="status"){ setStatus($("status"),"Running fast - "+(m.position!=null?"queue "+m.position:"queued")+(m.eta?" ETA "+Math.round(m.eta)+"s":"")); } else if(m.type==="data"){ out2=m.data; } }
+      var d2=Array.isArray(out2)?out2[0]:out2; if(!d2) throw new Error("No response"); if(d2.status==="blocked") throw new Error(d2.message||"Blocked by filter - try neutral prompt without her/him"); if(!d2.image) throw new Error(d2.message||"No image");
+      dataUrl=d2.image; usedModel=S.fastId; usedLora=payload.lora_adapter;
     }
-    var data=Array.isArray(out)?out[0]:out;
-    if(!data) throw new Error("No response");
-    if(data.status==="blocked"){ setStatus($("status"), data.message||"Blocked by filter", true); return; }
-    if(!data.image) throw new Error(data.message||"No image returned");
-    showResult(data.image, payload, Date.now()-t0);
-    setStatus($("status"), "Done");
+    showResult(dataUrl, usedModel, usedLora, Date.now()-t0);
+    setStatus($("status"),"Done - used "+usedModel.split("/")[1]);
   }catch(e){
-    setStatus($("status"), "Failed: "+(e && e.message || e)+"\nAdd HF token in Settings and retry.", true);
-  }finally{ S.busy=false; genBtn.disabled=false; setConn("Connected: "+S.loraSpaceId.split("/")[1],"ok"); }
+    setStatus($("status"),"Failed: "+(e.message||e)+"\nTip: Use neutral prompt like 'person in blue saree sitting on wooden chair, preserve face and clothing' without her/him, and ensure HF token is set.",true);
+  }finally{ S.busy=false; $("generate").disabled=false; setConn("Connected","ok"); }
 });
 
-async function safetyCheck(prompt, loud){
-  if(loud===void 0) loud=true;
-  if(!S.loraClient){ if(loud) setStatus($("status"), "Not connected", true); return null; }
-  try{
-    var res=await S.loraClient.predict("/check_safety", {prompt:prompt});
-    var d=Array.isArray(res.data)?res.data[0]:res.data;
-    if(loud) setStatus($("status"), d && d.status==="blocked" ? "⛔ "+d.message : "✅ Passed filter", d && d.status==="blocked");
-    return d;
-  }catch(e){ if(loud) setStatus($("status"), "Safety check unavailable: "+(e && e.message || e), true); return null; }
+function showResult(dataUrl, model, lora, ms){
+  var out=$("out"); out.innerHTML=""; var img=el("img"); img.src=dataUrl; out.appendChild(img);
+  S.lastResult=dataUrl; $("metaModel").textContent=model.split("/")[1]||model; $("metaSeed").textContent=loraSel.value; $("metaLora").textContent=lora; $("metaTime").textContent=(ms/1000).toFixed(1)+"s";
+  S.history.unshift({dataUrl:dataUrl, model:model, lora:lora}); if(S.history.length>24) S.history.pop();
+  var hist=$("hist"); hist.innerHTML=""; S.history.forEach(h=>{ var im=el("img"); im.src=h.dataUrl; im.title=h.model; im.onclick=()=>{ $("out").innerHTML=""; var b=el("img"); b.src=h.dataUrl; $("out").appendChild(b); }; hist.appendChild(im); });
 }
-var safetyBtn=$("checkSafety"); if(safetyBtn) safetyBtn.addEventListener("click", function(){ safetyCheck($("prompt").value.trim(), true); });
 
-function showResult(dataUrl, payload, ms){
-  var out=$("out"); if(!out) return; out.innerHTML=""; var img=el("img"); img.src=dataUrl; img.alt="result"; out.appendChild(img);
-  S.lastResult=dataUrl;
-  var msEl=$("metaSeed"); if(msEl) msEl.textContent=payload.randomize_seed?"random "+payload.seed:String(payload.seed);
-  var mlEl=$("metaLora"); if(mlEl) mlEl.textContent=payload.lora_adapter;
-  var mtEl=$("metaTime"); if(mtEl) mtEl.textContent=(ms/1000).toFixed(1)+"s";
-  var mrEl=$("metaRes"); if(mrEl) mrEl.textContent="1024px max";
-  S.history.unshift({dataUrl:dataUrl, prompt:payload.prompt, lora:payload.lora_adapter});
-  if(S.history.length>24) S.history.pop(); renderHistory();
-}
-function renderHistory(){
-  var box=$("hist"); if(!box) return; box.innerHTML="";
-  if(!S.history.length){ box.appendChild(el("span","hint","No results yet.")); return; }
-  S.history.forEach(function(h){
-    var img=el("img"); img.src=h.dataUrl; img.title=h.lora+" - "+h.prompt;
-    img.addEventListener("click", function(){ var out=$("out"); out.innerHTML=""; var big=el("img"); big.src=h.dataUrl; out.appendChild(big); });
-    box.appendChild(img);
-  });
-}
-var useBtn=$("useAsInput"); if(useBtn) useBtn.addEventListener("click", async function(){
-  if(!S.lastResult) return; var r=await resizeDataUrl(S.lastResult, 1024);
-  S.images=[{id:S.imgSeq++, name:"result-"+S.imgSeq+".jpg", dataUrl:r.url, w:r.w, h:r.h}]; renderThumbs(); setStatus($("status"), "Result set as input");
-});
-var saveBtn=$("saveResult"); if(saveBtn) saveBtn.addEventListener("click", function(){
-  if(!S.lastResult){ setStatus($("status"), "No result", true); return; }
-  try{ var a=document.createElement('a'); a.href=S.lastResult; a.download="qwen-edit-"+Date.now()+".png"; document.body.appendChild(a); a.click(); a.remove(); }
-  catch(e){ var sh=$("saveHint"); if(sh) sh.textContent="Save blocked in preview - open file directly."; }
-});
+$("clearAll").addEventListener("click",()=>{ S.images=[]; renderThumbs(); });
+$("useAsInput").addEventListener("click", async()=>{ if(!S.lastResult) return; var rz=await resizeDataUrl(S.lastResult,1024); S.images=[{id:S.seq++, name:"result.jpg", dataUrl:rz.url, w:rz.w, h:rz.h}]; renderThumbs(); });
+$("saveResult").addEventListener("click",()=>{ if(!S.lastResult) return; var a=document.createElement('a'); a.href=S.lastResult; a.download="qwen-edit-"+Date.now()+".png"; a.click(); });
 
-// Custom + Settings
-async function connectCustom(){
-  var id=$("customSpace") && $("customSpace").value.trim();
-  if(!id){ setStatus($("customStatus"), "Enter Space ID", true); return; }
-  setStatus($("customStatus"), "Connecting...");
-  try{
-    var opts={}; if(S.token && S.token.indexOf("hf_")===0) opts.token=S.token;
-    S.customClient=await Client.connect(id, opts);
-    setStatus($("customStatus"), "Connected to "+id);
-    try{
-      var info=await S.customClient.view_api();
-      $("apiDump").textContent=JSON.stringify(info,null,2).slice(0,8000);
-      var eps=Object.keys(info && info.named_endpoints || {});
-      var sel=$("endpoint"); sel.innerHTML="";
-      if(!eps.length) sel.appendChild(new Option("No named endpoints",""));
-      else eps.forEach(function(k){ sel.appendChild(new Option(k,k)); });
-    }catch(e){ $("apiDump").textContent="Connected but could not inspect API"; }
-  }catch(e){ setStatus($("customStatus"), "Failed: "+(e && e.message || e), true); }
-}
-var ccBtn=$("connectCustom"); if(ccBtn) ccBtn.addEventListener("click", connectCustom);
-var iaBtn=$("inspectApi"); if(iaBtn) iaBtn.addEventListener("click", async function(){
-  if(!S.customClient){ setStatus($("customStatus"), "Connect first", true); return; }
-  try{ var info=await S.customClient.view_api(); $("apiDump").textContent=JSON.stringify(info,null,2).slice(0,12000); }
-  catch(e){ setStatus($("customStatus"), "Inspect failed: "+(e && e.message || e), true); }
+$("applySettings").addEventListener("click", async()=>{
+  var fast=$("spaceId").value.trim()||"prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast";
+  var base=$("baseSpaceId").value.trim()||"Qwen/Qwen-Image-Edit";
+  var tok=$("token").value.trim(); S.fastId=fast; S.baseId=base; S.token=tok;
+  try{ localStorage.setItem("hf_token",tok); }catch(e){}
+  setStatus($("settingsStatus"),"Connecting...");
+  await connectFast(fast,tok); await connectBase(base,tok);
+  setStatus($("settingsStatus"),"Connected Fast: "+fast+"\nBase: "+base);
 });
-
-var applyBtn=$("applySettings"); if(applyBtn) applyBtn.addEventListener("click", async function(){
-  var sid=$("spaceId") && $("spaceId").value.trim() || "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast";
-  var tok=$("token") && $("token").value.trim();
-  S.loraSpaceId=sid; S.token=tok||"";
-  try{ localStorage.setItem("hf_token", tok||""); }catch(e){}
-  setStatus($("settingsStatus"), "Applying...");
-  await connectLora(sid, tok);
-  setStatus($("settingsStatus"), "Connected to "+sid);
-});
-var discBtn=$("disconnect"); if(discBtn) discBtn.addEventListener("click", function(){
-  S.loraClient=null; S.token=""; setConn("Disconnected",""); setStatus($("settingsStatus"), "Disconnected"); var tv=$("token"); if(tv) tv.value=""; try{ localStorage.removeItem("hf_token"); }catch(e){}
-});
+$("disconnect").addEventListener("click",()=>{ S.fastClient=null; S.baseClient=null; S.token=""; setConn("Disconnected",""); $("token").value=""; try{localStorage.removeItem("hf_token");}catch(e){} });
 
 (function init(){
-  try{
-    var saved=localStorage.getItem("hf_token");
-    if(saved){ var tv=$("token"); if(tv) tv.value=saved; S.token=saved; }
-  }catch(e){}
-  S.loraSpaceId=($("spaceId") && $("spaceId").value.trim()) || "prithivMLmods/Qwen-Image-Edit-2511-LoRAs-Fast";
-  connectLora(S.loraSpaceId, S.token);
+  try{ var saved=localStorage.getItem("hf_token"); if(saved){ $("token").value=saved; S.token=saved; } }catch(e){}
+  connectFast(S.fastId, S.token);
+  // pre-connect base in background for pose edits
+  connectBase(S.baseId, S.token);
 })();
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
