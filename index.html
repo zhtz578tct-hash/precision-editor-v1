@@ -116,11 +116,11 @@ textarea{resize:vertical;min-height:86px} textarea:focus,input:focus,select:focu
 </div>
 
 <div>
-<div class="card"><h3>Result</h3><div class="out" id="out"><div class="hint" style="text-align:center;padding:30px">Upload image, write prompt, Generate. First run 30-60s.</div></div>
+<div class="card"><h3 style="display:flex;justify-content:space-between;align-items:center">Result <button class="btn secondary sm" id="clearResult" style="padding:4px 10px;font-size:11px">Clear result</button></h3><div class="out" id="out"><div class="hint" style="text-align:center;padding:30px">Upload image, write prompt, Generate. First run 30-60s.</div></div>
 <div style="margin-top:10px"><div class="kv"><span>Model used</span><b id="metaModel">—</b></div><div class="kv"><span>Seed</span><b id="metaSeed">—</b></div><div class="kv"><span>LoRA</span><b id="metaLora">—</b></div><div class="kv"><span>Time</span><b id="metaTime">—</b></div></div>
 <div style="display:flex;gap:8px;margin-top:10px"><button class="btn secondary sm" id="useAsInput" style="width:100%">↩ Use as input</button><button class="btn secondary sm" id="saveResult" style="width:100%">⤓ Save</button></div>
 </div>
-<div class="card"><h3>History</h3><div class="hist" id="hist"><span class="hint">No results yet</span></div></div>
+<div class="card"><h3 style="display:flex;justify-content:space-between;align-items:center">History <button class="btn secondary sm" id="clearHistory" style="padding:4px 10px;font-size:11px">Clear history</button></h3><div class="hist" id="hist"><span class="hint">No results yet</span></div></div>
 </div>
 </div>
 </section>
@@ -306,6 +306,19 @@ function showResult(dataUrl, model, lora, ms){
 }
 
 $("clearAll").addEventListener("click",()=>{ S.images=[]; renderThumbs(); });
+$("clearResult").addEventListener("click",()=>{ 
+  S.lastResult=null; 
+  var out=$("out"); if(out) out.innerHTML='<div class="hint" style="text-align:center;padding:30px">Result cleared. Upload new image.</div>';
+  $("metaModel").textContent="—"; $("metaSeed").textContent="—"; $("metaLora").textContent="—"; $("metaTime").textContent="—";
+  setStatus($("status"),"Result cleared");
+});
+$("clearHistory").addEventListener("click",()=>{ 
+  if(!S.history.length) return;
+  if(!confirm("Clear all "+S.history.length+" generated images from history?")) return;
+  S.history=[]; 
+  var hist=$("hist"); if(hist) hist.innerHTML='<span class="hint">No results yet</span>';
+  setStatus($("status"),"History cleared");
+});
 $("useAsInput").addEventListener("click", async()=>{ if(!S.lastResult) return; var rz=await resizeDataUrl(S.lastResult,1024); S.images=[{id:S.seq++, name:"result.jpg", dataUrl:rz.url, w:rz.w, h:rz.h}]; renderThumbs(); });
 $("saveResult").addEventListener("click",()=>{ if(!S.lastResult) return; var a=document.createElement('a'); a.href=S.lastResult; a.download="qwen-edit-"+Date.now()+".png"; a.click(); });
 
